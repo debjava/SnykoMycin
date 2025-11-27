@@ -1,0 +1,40 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+    <id>com.ddlab.rnd.SnykoMycin</id>
+
+    <!-- Public plugin name should be written in Title Case.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
+    <name>SnykoMycin</name>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor url="https://www.ddlabsinc.com">DDLABS Inc.</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
+    <description>
+        <![CDATA[
+        SnykoMicin – A Tornado Creation Powered by Passion<br>
+        <em>most HTML tags may be used</em>
+    ]]></description>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <!-- Extension points defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensions defaultExtensionNs="com.intellij">
+
+        <!-- SynkoMycin Setting Page for the Plugin -->
+        <applicationService serviceImplementation="com.ddlab.rnd.setting.SynkoMycinSettings"/>
+        <applicationConfigurable
+                id="com.example.settings"
+                displayName="SnykoMycin Plugin Settings"
+                instance="com.ddlab.rnd.setting.SnykoMycinPluginConfigurable"/>
+
+    </extensions>
+    <actions>
+
+    </actions>
+</idea-plugin>
