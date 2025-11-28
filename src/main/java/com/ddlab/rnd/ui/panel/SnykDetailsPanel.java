@@ -1,8 +1,13 @@
 package com.ddlab.rnd.ui.panel;
 
 import com.ddlab.rnd.ui.util.BasicUiUtil;
+import com.ddlab.rnd.ui.util.SnykUiUtil;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -10,6 +15,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+@Slf4j
 @Getter
 @Setter
 public class SnykDetailsPanel extends JPanel {
@@ -87,16 +93,52 @@ public class SnykDetailsPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 orgNameComboBox.removeAllItems(); // clear existing items
-                populateOrgNames();
+                String snykUri = snykUriTxt.getText();
+                String snykToken = snykTokentxt.getText();
+                log.debug("Snyk URI: " + snykUri);
+                log.debug("Snyk Token: " + snykToken);
+
+//                populateOrgNames(snykUri, snykToken);
+                populateOrgNamesWithProgress(snykUri, snykToken);
             }
         });
 	}
 
-    private void populateOrgNames() {
-        java.util.List<String> llmComboItems = BasicUiUtil.getOrgNames();
-        for (String comboItem : llmComboItems) {
-            orgNameComboBox.addItem(comboItem);
+    private void populateOrgNamesWithProgress(String snykUri, String snykToken) {
+
+        ProgressManager.getInstance().run(new Task.Modal(null, "Fetching Snyk Org Names ...", true) {
+            @Override
+            public void run(ProgressIndicator indicator) {
+                indicator.setIndeterminate(true);
+                indicator.setText("Please wait, fetching Snyk Org Names...");
+
+                // Simulate long-running work
+                populateOrgNames(snykUri, snykToken);
+            }
+        });
+
+
+    }
+
+    private void populateOrgNames(String snykUri, String snykToken) {
+        java.util.List<String> snykOrgGroupNames = null;
+        try {
+            snykOrgGroupNames = SnykUiUtil.getSnykOrgGroupNames(snykUri, snykToken);
+        } catch (Exception e) {
+            log.error("Error while getting Snyk org and group names", e);
+            e.printStackTrace();
         }
+        if(snykToken != null) {
+            for (String snykOrgGroupName : snykOrgGroupNames) {
+                orgNameComboBox.addItem(snykOrgGroupName);
+            }
+        }
+
+
+//        java.util.List<String> llmComboItems = BasicUiUtil.getOrgNames();
+//        for (String comboItem : llmComboItems) {
+//            orgNameComboBox.addItem(comboItem);
+//        }
     }
 
 }

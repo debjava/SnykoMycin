@@ -43,19 +43,19 @@ public class BasicUiUtil {
     }
 
 
-    public static List<String> getLLMModels(String clientId, String clientSecret) {
-        log.debug("Client Id: "+clientId);
-        log.debug("Client Secret: "+clientSecret);
-        List<String> comboItems = List.of();
-
-        if(clientId == null || clientId.isEmpty()) {
-            System.out.println("Client Id is empty ..");
-            log.debug("Client Id is empty or blank..");
-            Messages.showErrorDialog("Client Id cannot empty or blank", "Error title");
-        }
-        comboItems = List.of("Model A", "Model B", "Model C","Model D","Model E");
-        return comboItems;
-    }
+//    public static List<String> getLLMModels(String clientId, String clientSecret) {
+//        log.debug("Client Id: "+clientId);
+//        log.debug("Client Secret: "+clientSecret);
+//        List<String> comboItems = List.of();
+//
+//        if(clientId == null || clientId.isEmpty()) {
+//            System.out.println("Client Id is empty ..");
+//            log.debug("Client Id is empty or blank..");
+//            Messages.showErrorDialog("Client Id cannot empty or blank", "Error title");
+//        }
+//        comboItems = List.of("Model A", "Model B", "Model C","Model D","Model E");
+//        return comboItems;
+//    }
 
     public static boolean isNullOrEmptyOrBlank(String str) {
         return str == null || str.isBlank();
@@ -63,6 +63,12 @@ public class BasicUiUtil {
 
 
     public static List<String> getOrgNames() {
+        List<String> comboItems = List.of("Org-A", "Org-B", "Org-C","Org-D","Org-E");
+        return comboItems;
+    }
+
+    public static List<String> getActualOrgNames(String snykUri, String snykToken) {
+        snykToken = "token " + snykToken;
         List<String> comboItems = List.of("Org-A", "Org-B", "Org-C","Org-D","Org-E");
         return comboItems;
     }
@@ -109,10 +115,14 @@ public class BasicUiUtil {
     public static boolean isSnykPanelModified(SynkoMycinSettings settings, SnykoMycinSettingComponent component) {
         // For Snyk Panel
         SnykDetailsPanel snykPanel = (SnykDetailsPanel) component.getSnykPanel();
+        String selectedSnykOrg = (String) snykPanel.getOrgNameComboBox().getSelectedItem();
+
         return !snykPanel.getSnykUriTxt().getText().equals(settings.getSnykUriTxt())
                 || !snykPanel.getSnykTokentxt().getText().equals(settings.getSnykTokenTxt())
-                || !snykPanel.getOrgNameComboBox().getSelectedItem().toString()
-                .equals(settings.getSnykOrgComboSelection());
+                || !(selectedSnykOrg != null && selectedSnykOrg.equals(settings.getSnykOrgComboSelection()));
+//                .equals(settings.getSnykOrgComboSelection());
+//                || !snykPanel.getOrgNameComboBox().getSelectedItem().toString()
+
     }
 
     public static void resetAiPanel(SynkoMycinSettings settings, SnykoMycinSettingComponent component) {

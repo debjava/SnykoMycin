@@ -16,8 +16,8 @@ import lombok.Setter;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class LLmModel {
 
-    @JsonProperty("object")
-    private String object;
+//    @JsonProperty("object")
+//    private String object;
 	@JsonProperty("data")
 	private List<LLMModelData> data;
 

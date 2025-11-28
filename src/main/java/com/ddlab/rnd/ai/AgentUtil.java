@@ -2,8 +2,9 @@ package com.ddlab.rnd.ai;
 
 import com.ddlab.rnd.ai.output.model.LLmModel;
 import com.ddlab.rnd.ai.output.model.OAuthTokenModel;
-import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.databind.ObjectMapper;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -48,13 +49,14 @@ public class AgentUtil {
     public static List<String> getAllLLMModels(String bearerToken, String aiAPIUrl) throws Exception {
         aiAPIUrl = aiAPIUrl + "/models";
         HttpResponse<String> response;
-        try (HttpClient client = HttpClient.newHttpClient()) {
+        HttpClient client = HttpClient.newHttpClient();
+//        try (HttpClient client = HttpClient.newHttpClient()) {
             URI uri = URI.create(aiAPIUrl);
             HttpRequest request = HttpRequest.newBuilder().uri(uri)
                     .header("Content-Type", "application/json").header("Authorization", bearerToken)
                     .GET().build();
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        }
+//        }
         String responseBody = response.body();
         log.debug("Model Response Body: " + responseBody);
         LLmModel model = null;

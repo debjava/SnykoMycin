@@ -1,6 +1,9 @@
 package com.ddlab.rnd.ui.panel;
 
 import com.ddlab.rnd.ui.util.BasicUiUtil;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -135,7 +138,8 @@ public class AiDetailsPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 llmModelcomboBox.removeAllItems(); // clear existing items
-                populateLLMModels();
+//                populateLLMModels();
+                populateLLMModelsWithProgress();
             }
         });
 		
@@ -165,6 +169,19 @@ public class AiDetailsPanel extends JPanel {
 //		add(testBtn, gbc_testBtn);
 
 	}
+
+    private void populateLLMModelsWithProgress() {
+        ProgressManager.getInstance().run(new Task.Modal(null, "Fetching LLM Models ...", true) {
+            @Override
+            public void run(ProgressIndicator indicator) {
+                indicator.setIndeterminate(true);
+                indicator.setText("Please wait, fetching LLM Models...");
+
+                // Simulate long-running work
+                populateLLMModels();
+            }
+        });
+    }
 
     private void populateLLMModels() {
         String clientId = clientIdTxt.getText();
