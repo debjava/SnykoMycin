@@ -27,7 +27,7 @@ public class SnykDetailsPanel extends JPanel {
 		gbl_snykPanel.rowWeights = new double[] { 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		setLayout(gbl_snykPanel);
 
-		JLabel snykUriLbl = new JLabel("Snyk Endpoint URI:");
+		JLabel snykUriLbl = new JLabel("*Snyk Endpoint URI:");
 		GridBagConstraints gbc_snykUriLbl = new GridBagConstraints();
 		gbc_snykUriLbl.insets = new Insets(0, 0, 5, 5);
 		gbc_snykUriLbl.anchor = GridBagConstraints.EAST;
@@ -44,7 +44,7 @@ public class SnykDetailsPanel extends JPanel {
 		add(snykUriTxt, gbc_snykUriTxt);
 		snykUriTxt.setColumns(10);
 
-		JLabel snykTokenLbl = new JLabel("Snyk Token:");
+		JLabel snykTokenLbl = new JLabel("*Snyk Token:");
 		GridBagConstraints gbc_snykTokenLbl = new GridBagConstraints();
 		gbc_snykTokenLbl.anchor = GridBagConstraints.EAST;
 		gbc_snykTokenLbl.insets = new Insets(0, 0, 5, 5);

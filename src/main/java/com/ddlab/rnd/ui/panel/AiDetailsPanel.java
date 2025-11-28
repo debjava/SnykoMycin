@@ -32,7 +32,7 @@ public class AiDetailsPanel extends JPanel {
 		gbl_aiDetailsPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		setLayout(gbl_aiDetailsPanel);
 		
-		JLabel clienIdLbl = new JLabel("Client Id:");
+		JLabel clienIdLbl = new JLabel("*Client Id:");
 		GridBagConstraints gbc_clienIdLbl = new GridBagConstraints();
 		gbc_clienIdLbl.insets = new Insets(0, 0, 5, 5);
 		gbc_clienIdLbl.anchor = GridBagConstraints.EAST;
@@ -49,7 +49,7 @@ public class AiDetailsPanel extends JPanel {
 		add(clientIdTxt, gbc_clientIdTxt);
 		clientIdTxt.setColumns(10);
 		
-		JLabel clientSecretLbl = new JLabel("Client Secret:");
+		JLabel clientSecretLbl = new JLabel("*Client Secret:");
 		GridBagConstraints gbc_clientSecretLbl = new GridBagConstraints();
 		gbc_clientSecretLbl.anchor = GridBagConstraints.EAST;
 		gbc_clientSecretLbl.insets = new Insets(0, 0, 5, 5);
@@ -66,7 +66,7 @@ public class AiDetailsPanel extends JPanel {
 		add(clientSecretTxt, gbc_clientSecretTxt);
 		clientSecretTxt.setColumns(10);
 		
-		JLabel oauthLbl = new JLabel("OAuth End Point:");
+		JLabel oauthLbl = new JLabel("*OAuth End Point:");
 		GridBagConstraints gbc_oauthLbl = new GridBagConstraints();
 		gbc_oauthLbl.anchor = GridBagConstraints.EAST;
 		gbc_oauthLbl.insets = new Insets(0, 0, 5, 5);
@@ -84,7 +84,7 @@ public class AiDetailsPanel extends JPanel {
 		oauthEndPointTxt.setColumns(10);
 
 
-        JLabel llmApiEndPointLbl = new JLabel("LLM Api EndPoint:");
+        JLabel llmApiEndPointLbl = new JLabel("*LLM Api EndPoint:");
         GridBagConstraints gbc_llmApiEndPointLbl = new GridBagConstraints();
         gbc_llmApiEndPointLbl.anchor = GridBagConstraints.EAST;
         gbc_llmApiEndPointLbl.insets = new Insets(0, 0, 5, 5);

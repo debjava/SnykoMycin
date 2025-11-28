@@ -30,11 +30,23 @@
         <applicationService serviceImplementation="com.ddlab.rnd.setting.SynkoMycinSettings"/>
         <applicationConfigurable
                 id="com.example.settings"
-                displayName="SnykoMycin Plugin Settings"
+                displayName="SnykoMycin Setting"
                 instance="com.ddlab.rnd.setting.SnykoMycinPluginConfigurable"/>
 
     </extensions>
     <actions>
-
+        <group id="SynkoMycinPlugin.SubMenu" text="SnykoMycin"
+               popup="true" icon="/icons/double-arrow-16.png">
+            <action id="MyPlugin.Action1"
+                    class="com.ddlab.rnd.action.UpdateBuildAction"
+                    text="Update Dependencies"
+                    icon="/icons/update-1-16.png"/>
+            <action id="MyPlugin.Action2"
+                    class="com.ddlab.rnd.action.DisplaySnykDataAction"
+                    text="Show Snyk Data Action"
+                    icon="/icons/snyk-1-16.png"/>
+            <!--<add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>-->
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </group>
     </actions>
 </idea-plugin>

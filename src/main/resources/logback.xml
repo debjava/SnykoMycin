@@ -8,7 +8,7 @@
 
     <!-- File Appender -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${user.home}/DDLABS/logs/ddlab-plugin.log</file> <!-- Log file path relative to the plugin's working directory -->
+        <file>${user.home}/DDLABS/snykomycin/snykomycin.log</file> <!-- Log file path relative to the plugin's working directory -->
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>logs/plugin-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
             <!-- Each file should be at most 10MB -->
