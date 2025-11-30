@@ -1,4 +1,6 @@
-package com.ddlab.rnd.snyk.model;
+package com.ddlab.rnd.snyk.project.model;
+
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,14 +11,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SnykOrg {
-    @JsonProperty("id")
-    private String id;
+public class ProjectIdData {
 
-	@JsonProperty("name")
-	private String name;
-		
-	@JsonProperty("group")
-	private Group group;
-	
+    @JsonProperty("data")
+	private List<ProjectIdDatum> projectIdData;
+
 }

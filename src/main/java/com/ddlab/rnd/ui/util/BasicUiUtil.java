@@ -97,6 +97,19 @@ public class BasicUiUtil {
         List<String> snykOrgComboItems = getComboBoxItems(snykOrgComboBox);
         settings.setSnykOrgComboItems(snykOrgComboItems);
         settings.setSnykOrgComboSelection((String) snykOrgComboBox.getSelectedItem());
+
+        // TODO also compare two different list or maps
+        // Or check from the Snyk Panel
+        if(settings.getSnykOrgNameIdMap() == null) {
+            settings.setSnykOrgNameIdMap(snykPanel.getSnykOrgNameIdMap());
+        } else {
+            settings.setSnykOrgNameIdMap(settings.getSnykOrgNameIdMap());
+        }
+
+//        Map<String, String> snykOrgNameIdMap = snykPanel.getSnykOrgNameIdMap();
+        log.debug("While saving snykOrgNameIdMap: " + settings.getSnykOrgNameIdMap());
+
+//        settings.setSnykOrgNameIdMap(snykPanel.getSnykOrgNameIdMap());
     }
 
     public static boolean isAiPanelModified(SynkoMycinSettings settings, SnykoMycinSettingComponent component) {

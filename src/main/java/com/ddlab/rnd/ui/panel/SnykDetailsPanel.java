@@ -1,6 +1,5 @@
 package com.ddlab.rnd.ui.panel;
 
-import com.ddlab.rnd.ui.util.BasicUiUtil;
 import com.ddlab.rnd.ui.util.SnykUiUtil;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -14,80 +13,120 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Getter
 @Setter
 public class SnykDetailsPanel extends JPanel {
-	private JTextField snykUriTxt;
-	private JTextField snykTokentxt;
+    private JTextField snykUriTxt;
+    private JTextField snykTokentxt;
     private JComboBox<String> orgNameComboBox;
+    private Map<String, String> snykOrgNameIdMap = new HashMap<>();
 
-	public SnykDetailsPanel() {
-		setBorder(new TitledBorder(null, "Snyk Details", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+    public SnykDetailsPanel() {
+        setBorder(new TitledBorder(null, "Snyk Details", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 
-		GridBagLayout gbl_snykPanel = new GridBagLayout();
-		gbl_snykPanel.columnWidths = new int[] { 0, 0, 0 };
-		gbl_snykPanel.rowHeights = new int[] { 0, 0, 0, 0 };
-		gbl_snykPanel.columnWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
-		gbl_snykPanel.rowWeights = new double[] { 0.0, 0.0, 0.0, Double.MIN_VALUE };
-		setLayout(gbl_snykPanel);
+        createPanelLayout();
 
-		JLabel snykUriLbl = new JLabel("*Snyk Endpoint URI:");
-		GridBagConstraints gbc_snykUriLbl = new GridBagConstraints();
-		gbc_snykUriLbl.insets = new Insets(0, 0, 5, 5);
-		gbc_snykUriLbl.anchor = GridBagConstraints.EAST;
-		gbc_snykUriLbl.gridx = 0;
-		gbc_snykUriLbl.gridy = 0;
-		add(snykUriLbl, gbc_snykUriLbl);
+        createSnykUriLabel();
 
-		snykUriTxt = new JTextField();
-		GridBagConstraints gbc_snykUriTxt = new GridBagConstraints();
-		gbc_snykUriTxt.insets = new Insets(0, 0, 5, 5);
-		gbc_snykUriTxt.fill = GridBagConstraints.HORIZONTAL;
-		gbc_snykUriTxt.gridx = 1;
-		gbc_snykUriTxt.gridy = 0;
-		add(snykUriTxt, gbc_snykUriTxt);
-		snykUriTxt.setColumns(10);
+        createSnykUriText();
 
-		JLabel snykTokenLbl = new JLabel("*Snyk Token:");
-		GridBagConstraints gbc_snykTokenLbl = new GridBagConstraints();
-		gbc_snykTokenLbl.anchor = GridBagConstraints.EAST;
-		gbc_snykTokenLbl.insets = new Insets(0, 0, 5, 5);
-		gbc_snykTokenLbl.gridx = 0;
-		gbc_snykTokenLbl.gridy = 1;
-		add(snykTokenLbl, gbc_snykTokenLbl);
+        createSnykTokenLabel();
 
-		snykTokentxt = new JTextField();
-		GridBagConstraints gbc_snykTokentxt = new GridBagConstraints();
-		gbc_snykTokentxt.insets = new Insets(0, 0, 5, 5);
-		gbc_snykTokentxt.fill = GridBagConstraints.HORIZONTAL;
-		gbc_snykTokentxt.gridx = 1;
-		gbc_snykTokentxt.gridy = 1;
-		add(snykTokentxt, gbc_snykTokentxt);
-		snykTokentxt.setColumns(10);
+        createSnykTokenTxt();
 
-		JLabel orgNameLbl = new JLabel("Org Name:");
-		GridBagConstraints gbc_orgNameLbl = new GridBagConstraints();
-		gbc_orgNameLbl.anchor = GridBagConstraints.EAST;
-		gbc_orgNameLbl.insets = new Insets(0, 0, 0, 5);
-		gbc_orgNameLbl.gridx = 0;
-		gbc_orgNameLbl.gridy = 2;
-		add(orgNameLbl, gbc_orgNameLbl);
+        createOrgNameLbl();
 
-		orgNameComboBox = new JComboBox<String>();
-		GridBagConstraints gbc_orgNameComboBox = new GridBagConstraints();
-		gbc_orgNameComboBox.insets = new Insets(0, 0, 0, 5);
-		gbc_orgNameComboBox.fill = GridBagConstraints.HORIZONTAL;
-		gbc_orgNameComboBox.gridx = 1;
-		gbc_orgNameComboBox.gridy = 2;
-		add(orgNameComboBox, gbc_orgNameComboBox);
+        createOrgNameComboBox();
 
-		JButton snykOrgGetBtn = new JButton("Get Orgs");
-		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
-		gbc_btnNewButton.gridx = 2;
-		gbc_btnNewButton.gridy = 2;
-		add(snykOrgGetBtn, gbc_btnNewButton);
+        createSnykOrgButton();
+
+    }
+
+    // ~~~~~~~~~~~~~~~~~~~~ UI Specific private methods ~~~~~~~~~~~~~~~~~~~~
+
+    private void createPanelLayout() {
+        GridBagLayout gbl_snykPanel = new GridBagLayout();
+        gbl_snykPanel.columnWidths = new int[]{0, 0, 0};
+        gbl_snykPanel.rowHeights = new int[]{0, 0, 0, 0};
+        gbl_snykPanel.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
+        gbl_snykPanel.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
+        setLayout(gbl_snykPanel);
+    }
+
+    private void createSnykUriLabel() {
+        JLabel snykUriLbl = new JLabel("*Snyk Endpoint URI:");
+        GridBagConstraints gbc_snykUriLbl = new GridBagConstraints();
+        gbc_snykUriLbl.insets = new Insets(0, 0, 5, 5);
+        gbc_snykUriLbl.anchor = GridBagConstraints.EAST;
+        gbc_snykUriLbl.gridx = 0;
+        gbc_snykUriLbl.gridy = 0;
+        add(snykUriLbl, gbc_snykUriLbl);
+    }
+
+
+    private void createSnykUriText() {
+        snykUriTxt = new JTextField();
+        GridBagConstraints gbc_snykUriTxt = new GridBagConstraints();
+        gbc_snykUriTxt.insets = new Insets(0, 0, 5, 5);
+        gbc_snykUriTxt.fill = GridBagConstraints.HORIZONTAL;
+        gbc_snykUriTxt.gridx = 1;
+        gbc_snykUriTxt.gridy = 0;
+        add(snykUriTxt, gbc_snykUriTxt);
+        snykUriTxt.setColumns(10);
+        snykUriTxt.setText("https://snyk.io/api/v1"); // default snyk uri
+    }
+
+    private void createSnykTokenLabel() {
+        JLabel snykTokenLbl = new JLabel("*Snyk Token:");
+        GridBagConstraints gbc_snykTokenLbl = new GridBagConstraints();
+        gbc_snykTokenLbl.anchor = GridBagConstraints.EAST;
+        gbc_snykTokenLbl.insets = new Insets(0, 0, 5, 5);
+        gbc_snykTokenLbl.gridx = 0;
+        gbc_snykTokenLbl.gridy = 1;
+        add(snykTokenLbl, gbc_snykTokenLbl);
+    }
+
+    private void createSnykTokenTxt() {
+        snykTokentxt = new JTextField();
+        GridBagConstraints gbc_snykTokentxt = new GridBagConstraints();
+        gbc_snykTokentxt.insets = new Insets(0, 0, 5, 5);
+        gbc_snykTokentxt.fill = GridBagConstraints.HORIZONTAL;
+        gbc_snykTokentxt.gridx = 1;
+        gbc_snykTokentxt.gridy = 1;
+        add(snykTokentxt, gbc_snykTokentxt);
+        snykTokentxt.setColumns(10);
+    }
+
+    private void createOrgNameLbl() {
+        JLabel orgNameLbl = new JLabel("Org Name:");
+        GridBagConstraints gbc_orgNameLbl = new GridBagConstraints();
+        gbc_orgNameLbl.anchor = GridBagConstraints.EAST;
+        gbc_orgNameLbl.insets = new Insets(0, 0, 0, 5);
+        gbc_orgNameLbl.gridx = 0;
+        gbc_orgNameLbl.gridy = 2;
+        add(orgNameLbl, gbc_orgNameLbl);
+    }
+
+    private void createOrgNameComboBox() {
+        orgNameComboBox = new JComboBox<String>();
+        GridBagConstraints gbc_orgNameComboBox = new GridBagConstraints();
+        gbc_orgNameComboBox.insets = new Insets(0, 0, 0, 5);
+        gbc_orgNameComboBox.fill = GridBagConstraints.HORIZONTAL;
+        gbc_orgNameComboBox.gridx = 1;
+        gbc_orgNameComboBox.gridy = 2;
+        add(orgNameComboBox, gbc_orgNameComboBox);
+    }
+
+    private void createSnykOrgButton() {
+        JButton snykOrgGetBtn = new JButton("Get Orgs");
+        GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
+        gbc_btnNewButton.gridx = 2;
+        gbc_btnNewButton.gridy = 2;
+        add(snykOrgGetBtn, gbc_btnNewButton);
 
         snykOrgGetBtn.addActionListener(new ActionListener() {
             @Override
@@ -102,7 +141,7 @@ public class SnykDetailsPanel extends JPanel {
                 populateOrgNamesWithProgress(snykUri, snykToken);
             }
         });
-	}
+    }
 
     private void populateOrgNamesWithProgress(String snykUri, String snykToken) {
 
@@ -116,29 +155,24 @@ public class SnykDetailsPanel extends JPanel {
                 populateOrgNames(snykUri, snykToken);
             }
         });
-
-
     }
+
 
     private void populateOrgNames(String snykUri, String snykToken) {
         java.util.List<String> snykOrgGroupNames = null;
         try {
             snykOrgGroupNames = SnykUiUtil.getSnykOrgGroupNames(snykUri, snykToken);
+            // Manipulate snyk org and group names and store in Map with group name as key and id as value
+            snykOrgGroupNames.stream().map(s -> s.split("~")).forEach(s -> snykOrgNameIdMap.put(s[1] + "~" + s[2], s[0]));
+            log.debug("While populating snykOrgNameIdMap: " + snykOrgNameIdMap);
+            snykOrgNameIdMap.forEach((k, v) -> {
+                orgNameComboBox.addItem(k);
+            });
         } catch (Exception e) {
             log.error("Error while getting Snyk org and group names", e);
             e.printStackTrace();
         }
-        if(snykToken != null) {
-            for (String snykOrgGroupName : snykOrgGroupNames) {
-                orgNameComboBox.addItem(snykOrgGroupName);
-            }
-        }
 
-
-//        java.util.List<String> llmComboItems = BasicUiUtil.getOrgNames();
-//        for (String comboItem : llmComboItems) {
-//            orgNameComboBox.addItem(comboItem);
-//        }
     }
 
 }

@@ -22,9 +22,12 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
 
-    <!-- Extension points defined by the plugin.
-         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+
     <extensions defaultExtensionNs="com.intellij">
+
+        <!-- SynkoMycin Tool Window for Synk Issues -->
+        <toolWindow id="Snyk Issues" anchor="right" icon="/icons/snyk-1-16.png"
+                    factoryClass="com.ddlab.rnd.tool.view.SnykIssuesToolWindowFactory"/>
 
         <!-- SynkoMycin Setting Page for the Plugin -->
         <applicationService serviceImplementation="com.ddlab.rnd.setting.SynkoMycinSettings"/>
@@ -37,14 +40,14 @@
     <actions>
         <group id="SynkoMycinPlugin.SubMenu" text="SnykoMycin"
                popup="true" icon="/icons/double-arrow-16.png">
-            <action id="MyPlugin.Action1"
-                    class="com.ddlab.rnd.action.UpdateBuildAction"
-                    text="Update Dependencies"
-                    icon="/icons/update-1-16.png"/>
-            <action id="MyPlugin.Action2"
+            <action id="SnykoMycin.DisplaySnykAction"
                     class="com.ddlab.rnd.action.DisplaySnykDataAction"
                     text="Show Snyk Data Action"
                     icon="/icons/snyk-1-16.png"/>
+            <action id="SnykoMycin.UpdateBuildAction"
+                    class="com.ddlab.rnd.action.UpdateBuildAction"
+                    text="Update Dependencies"
+                    icon="/icons/update-1-16.png"/>
             <!--<add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>-->
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </group>

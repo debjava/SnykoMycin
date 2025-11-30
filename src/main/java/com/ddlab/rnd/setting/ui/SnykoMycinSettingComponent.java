@@ -43,7 +43,6 @@ public class SnykoMycinSettingComponent {
         gbc_commonInfoLbl.gridy = 1;
         mainPanel.add(commonInfoLbl, gbc_commonInfoLbl);
 
-
         snykPanel = new SnykDetailsPanel();
         GridBagConstraints gbc_snykPanel = new GridBagConstraints();
         gbc_snykPanel.fill = GridBagConstraints.BOTH;

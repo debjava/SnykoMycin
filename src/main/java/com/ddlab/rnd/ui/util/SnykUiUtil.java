@@ -1,7 +1,6 @@
 package com.ddlab.rnd.ui.util;
 
 import com.ddlab.rnd.snyk.model.OrgDetails;
-import com.intellij.openapi.progress.EmptyProgressIndicator;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -9,7 +8,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.Messages;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -59,12 +57,12 @@ public class SnykUiUtil {
             String responseBody = getSnykOrgsResponseAsText(snykCoreUri, snykAuthToken);
             log.debug("Snyk OrgResponse Body: " + responseBody);
             ObjectMapper mapper = new ObjectMapper();
-//            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             OrgDetails orgDetails = mapper.readValue(responseBody, OrgDetails.class);
             orgGroupNames = orgDetails.getOrgs().stream().map(value -> {
+                String orgId = value.getId();
                 String orgName = value.getName();
                 String groupName = value.getGroup().getName();
-                return orgName + "~" + groupName;
+                return orgId + "~" + orgName + "~" + groupName;
             }).collect(Collectors.toList());
             log.debug("Org and Group Names: " + orgGroupNames);
         } catch (Exception e) {

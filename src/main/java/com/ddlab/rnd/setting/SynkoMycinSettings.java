@@ -8,6 +8,8 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
+
 @State(
         name = "SnykoMycinSettings",
         storages = @Storage("SnykoMycinSettings.xml")
@@ -28,6 +30,7 @@ public class SynkoMycinSettings implements PersistentStateComponent<SynkoMycinSe
     private String snykTokenTxt;
     private java.util.List<String> snykOrgComboItems;
     private String snykOrgComboSelection;
+    private Map<String, String> snykOrgNameIdMap;
 
     public static SynkoMycinSettings getInstance() {
         return com.intellij.openapi.application.ApplicationManager.getApplication().getService(SynkoMycinSettings.class);
@@ -54,5 +57,6 @@ public class SynkoMycinSettings implements PersistentStateComponent<SynkoMycinSe
         this.snykTokenTxt = state.snykTokenTxt;
         this.snykOrgComboItems = state.snykOrgComboItems;
         this.snykOrgComboSelection = state.snykOrgComboSelection;
+        this.snykOrgNameIdMap = state.snykOrgNameIdMap;
     }
 }
