@@ -22,6 +22,9 @@ public class Constants {
     public static final String CLIENT_CREDENTIALS = "grant_type=client_credentials";
 
     public static final String USER = "user";
+    public static final String ERR_TITLE = "SnykoMycin Error";
+
+    public static final String DEFAULT_SNYK_URI = "https://snyk.io/api/v1";
 
 
 

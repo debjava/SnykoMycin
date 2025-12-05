@@ -25,6 +25,10 @@
 
     <extensions defaultExtensionNs="com.intellij">
 
+        <notificationGroup id="Snykomycin Notification Group"
+                           displayType="BALLOON"
+                           key="snykmycinnotification.group.name"/>
+
         <!-- SynkoMycin Tool Window for Synk Issues -->
         <toolWindow id="Snyk Issues" anchor="right" icon="/icons/snyk-1-16.png"
                     factoryClass="com.ddlab.rnd.tool.view.SnykIssuesToolWindowFactory"/>

@@ -1,9 +1,12 @@
 package com.ddlab.rnd.ui.panel;
 
+import com.ddlab.rnd.common.util.Constants;
+import com.ddlab.rnd.ui.util.CommonUIUtil;
 import com.ddlab.rnd.ui.util.SnykUiUtil;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.ui.Messages;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -131,34 +134,50 @@ public class SnykDetailsPanel extends JPanel {
         snykOrgGetBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                orgNameComboBox.removeAllItems(); // clear existing items
-                String snykUri = snykUriTxt.getText();
-                String snykToken = snykTokentxt.getText();
-                log.debug("Snyk URI: " + snykUri);
-                log.debug("Snyk Token: " + snykToken);
-
-//                populateOrgNames(snykUri, snykToken);
-                populateOrgNamesWithProgress(snykUri, snykToken);
+                validateAndPopulateOrgNames();
             }
         });
     }
 
-    private void populateOrgNamesWithProgress(String snykUri, String snykToken) {
+    private void validateAndPopulateOrgNames() {
+        validateInputs();
+        orgNameComboBox.removeAllItems();
+        populateSnykOrgNamesProgressively();
+    }
 
-        ProgressManager.getInstance().run(new Task.Modal(null, "Fetching Snyk Org Names ...", true) {
+    private void populateSnykOrgNamesProgressively() throws RuntimeException {
+        ProgressManager.getInstance().run(new Task.Modal(null, "Fetching LLM Models ...", true) {
             @Override
             public void run(ProgressIndicator indicator) {
-                indicator.setIndeterminate(true);
-                indicator.setText("Please wait, fetching Snyk Org Names...");
-
-                // Simulate long-running work
-                populateOrgNames(snykUri, snykToken);
+                try {
+                    indicator.setIndeterminate(true);
+                    indicator.setText("Please wait, fetching LLM Models ...");
+                    populateOrgNames();
+                } catch (Exception ex) {
+                    CommonUIUtil.showAppErrorMessage(ex.getMessage());
+                }
             }
+
         });
     }
 
 
-    private void populateOrgNames(String snykUri, String snykToken) {
+    private void validateInputs() {
+        String snykUri = snykUriTxt.getText();
+        String snykToken = snykTokentxt.getText();
+        if (snykUri == null || snykUri.isEmpty()) {
+            Messages.showErrorDialog("Snyk URI cannot be empty", Constants.ERR_TITLE);
+            throw new IllegalArgumentException("Snyk URI cannot be empty!");
+        }
+        if (snykToken == null || snykToken.isEmpty()) {
+            Messages.showErrorDialog("Snyk Token cannot be empty", Constants.ERR_TITLE);
+            throw new IllegalArgumentException("Snyk Token cannot be empty!");
+        }
+    }
+
+    private void populateOrgNames() throws RuntimeException {
+        String snykUri = snykUriTxt.getText();
+        String snykToken = snykTokentxt.getText();
         java.util.List<String> snykOrgGroupNames = null;
         try {
             snykOrgGroupNames = SnykUiUtil.getSnykOrgGroupNames(snykUri, snykToken);
@@ -170,7 +189,7 @@ public class SnykDetailsPanel extends JPanel {
             });
         } catch (Exception e) {
             log.error("Error while getting Snyk org and group names", e);
-            e.printStackTrace();
+            throw new RuntimeException("Unable to fetch Snyk org and group names: " + e.getMessage());
         }
 
     }

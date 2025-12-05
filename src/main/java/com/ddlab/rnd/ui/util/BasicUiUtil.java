@@ -2,11 +2,11 @@ package com.ddlab.rnd.ui.util;
 
 
 import com.ddlab.rnd.ai.AgentUtil;
+import com.ddlab.rnd.exception.InvalidTokenException;
 import com.ddlab.rnd.setting.SynkoMycinSettings;
 import com.ddlab.rnd.setting.ui.SnykoMycinSettingComponent;
 import com.ddlab.rnd.ui.panel.AiDetailsPanel;
 import com.ddlab.rnd.ui.panel.SnykDetailsPanel;
-import com.intellij.openapi.ui.Messages;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -21,23 +21,31 @@ public class BasicUiUtil {
 //        return comboItems;
 //    }
 
-    public static List<String> getActualLLMModels(String clientId, String clientSecret, String tokenUrl, String aiApriEndPointUrl) {
+    public static List<String> getActualLLMModels(String clientId, String clientSecret, String tokenUrl, String aiApriEndPointUrl) throws InvalidTokenException {
         log.debug("Client Id: " + clientId);
         log.debug("Client Secret: " + clientSecret);
         List<String> comboItems = List.of();
-        if (isNullOrEmptyOrBlank(clientId) || isNullOrEmptyOrBlank(clientSecret) || isNullOrEmptyOrBlank(tokenUrl)) {
-            Messages.showErrorDialog("Client Id or Client Secret or Token Url cannot empty or blank", "SnykoMycin Error");
-        }
+
         // First get the bearer token
         try {
             String bearerToken = AgentUtil.getAIBearerToken(clientId, clientSecret, tokenUrl);
             log.debug("Bearer Token: " + bearerToken);
-            if (bearerToken == null) {
-                Messages.showErrorDialog("Bearer token is null, please enter clientId, clientSecret, tokenUrl ", "SnykoMycin Error");
+
+            if(bearerToken == null) {
+                throw new InvalidTokenException("Bearer token is null, please re-check client Id, client secret, token url ");
             }
             comboItems = AgentUtil.getAllLLMModels(bearerToken, aiApriEndPointUrl);
-        } catch (Exception e) {
-            Messages.showErrorDialog(e.getMessage(), "SnykoMycin Error");
+
+
+//            if (bearerToken == null) {
+//                Messages.showErrorDialog("Bearer token is null, please enter clientId, clientSecret, tokenUrl ", Constants.ERR_TITLE);
+//            }
+//            comboItems = AgentUtil.getAllLLMModels(bearerToken, aiApriEndPointUrl);
+        } catch (RuntimeException re) {
+            log.error("Exception while getting LLM models: ", re);
+            re.printStackTrace();
+            throw re;
+//            Messages.showErrorDialog(re.getMessage(), "SnykoMycin Error");
         }
         return comboItems;
     }

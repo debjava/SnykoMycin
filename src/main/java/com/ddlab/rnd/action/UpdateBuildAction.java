@@ -1,3 +1,15 @@
+/*
+ * ============================================================================
+ *  Copyright (c) 2025 DDLABS INC. All Rights Reserved.
+ *  Snykomycin is a plugin from Tornado Application maintained
+ *  by DDLABS INC (Debadatta Mishra).
+ *  Contact me in deba.java@gmail.com.
+ *
+ *  Description: Code for Snykomycin product from Tornado
+ *  Author: Debadatta Mishra
+ *  Version: 1.0
+ * ============================================================================
+ */
 package com.ddlab.rnd.action;
 
 import com.ddlab.rnd.setting.SynkoMycinSettings;
@@ -12,36 +24,44 @@ import com.intellij.psi.PsiFile;
 
 import java.util.List;
 
-// Example AnAction implementation
-    public class UpdateBuildAction extends AnAction {
+/**
+ * The Class UpdateBuildAction.
+ * @author Debadatta Mishra
+ */
+public class UpdateBuildAction extends AnAction {
 
-    private List<String> applicableFileTypes = List.of("pom.xml", "build.gradle", "package.json");
+	/** The applicable file types. */
+	private List<String> applicableFileTypes = List.of("pom.xml", "build.gradle", "package.json");
 
-        @Override
-        public void actionPerformed(AnActionEvent e) {
+	/**
+	 * Action performed.
+	 *
+	 * @param e the e
+	 */
+	@Override
+	public void actionPerformed(AnActionEvent e) {
 
+		// Print to Console
+		Project project = e.getProject();
+		if (project == null)
+			return;
 
-            //Print to Console
-            Project project = e.getProject();
-            if (project == null) return;
+		SynkoMycinSettings setting = SynkoMycinSettings.getInstance();
+		String selectedComboItem = setting.getLlmModelComboSelection();
+		System.out.println("Selected Combo Item: " + selectedComboItem);
 
-            SynkoMycinSettings setting = SynkoMycinSettings.getInstance();
-            String selectedComboItem = setting.getLlmModelComboSelection();
-            System.out.println("Selected Combo Item: "+selectedComboItem);
-
-            String clientSecret = setting.getClientSecretStr();
-            System.out.println("Client Secret: "+clientSecret);
+		String clientSecret = setting.getClientSecretStr();
+		System.out.println("Client Secret: " + clientSecret);
 
 //            ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("com.ddlab.rnd.temp-plug-setting1"); // Use the ID from plugin.xml
 //            ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Temp-plug-setting1");
-            ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("MyPluginConsole");
-            System.out.println("ToolWindow: "+toolWindow);
-            if (toolWindow != null) {
-                // Ensure the tool window is visible if it's not already
+		ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("MyPluginConsole");
+		System.out.println("ToolWindow: " + toolWindow);
+		if (toolWindow != null) {
+			// Ensure the tool window is visible if it's not already
 //                toolWindow.activate(null, true);
 
-
-                // TODO for Console
+			// TODO for Console
 
 //                ConsoleView consoleView = MyPluginConsoleManager.getConsoleView(project);
 //                System.out.println("Consolview: "+consoleView);
@@ -52,7 +72,6 @@ import java.util.List;
 //                    toolWindow.activate(null); // Activate the tool window to show the output
 //                }
 
-
 //                ContentManager contentManager = toolWindow.getContentManager();
 //                // Find the content containing your ConsoleView (assuming it's the first one)
 //                Content content = contentManager.getContent(0); // Or iterate to find by display name
@@ -61,18 +80,16 @@ import java.util.List;
 //                    ConsoleView consoleView = (ConsoleView) content.getComponent();
 //                    consoleView.print("Message from MyPluginAction!\n", ConsoleViewContentType.NORMAL_OUTPUT);
 //                }
-            }
+		}
 
+		// End pf printing to console
 
+		PsiFile file = e.getData(CommonDataKeys.PSI_FILE);
 
-            // End pf printing to console
+		String fileType = file.getFileType().getName();
+		System.out.println("File Type: " + fileType);
 
-            PsiFile file = e.getData(CommonDataKeys.PSI_FILE);
-
-            String fileType = file.getFileType().getName();
-            System.out.println("File Type: "+fileType);
-
-            String text = file.getFileDocument().getText();
+		String text = file.getFileDocument().getText();
 //            System.out.println("Text : "+text);
 
 //            MyPluginSettings setting = MyPluginSettings.getInstance();
@@ -82,35 +99,37 @@ import java.util.List;
 //            String clientSecret = setting.getClientSecretStr();
 //            System.out.println("Client Secret: "+clientSecret);
 
-
-
-            // Implement your action logic here
-            // e.g., get the current editor, caret position, etc.
+		// Implement your action logic here
+		// e.g., get the current editor, caret position, etc.
 //            Editor editor = e.getData(CommonDataKeys.EDITOR);
 //            if (editor != null) {
 //                // Perform actions on the editor content
 //                Messages.showMessageDialog(editor.getProject(), "Hello from custom editor action!", "Custom Action", Messages.getInformationIcon());
 //            }
-        }
+	}
 
-        @Override
-        public void update(AnActionEvent e) {
-            // Control visibility and enablement of the action
-            // e.g., enable only if an editor is active
+	/**
+	 * Update.
+	 *
+	 * @param e the e
+	 */
+	@Override
+	public void update(AnActionEvent e) {
+		// Control visibility and enablement of the action
+		// e.g., enable only if an editor is active
 //            VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
-            Editor editor = e.getData(CommonDataKeys.EDITOR);
-            String fileName = editor.getVirtualFile().getName();
-            System.out.println("Update File Name: "+fileName);
-            String fileType = editor.getVirtualFile().getFileType().getName();
-            System.out.println("Update File Type: "+fileType);
+		Editor editor = e.getData(CommonDataKeys.EDITOR);
+		String fileName = editor.getVirtualFile().getName();
+		System.out.println("Update File Name: " + fileName);
+		String fileType = editor.getVirtualFile().getFileType().getName();
+		System.out.println("Update File Type: " + fileType);
 
-            boolean isApplicableFileType = applicableFileTypes.contains(fileName);
+		boolean isApplicableFileType = applicableFileTypes.contains(fileName);
 
-            e.getPresentation().setEnabled(isApplicableFileType);
+		e.getPresentation().setEnabled(isApplicableFileType);
 //            e.getPresentation().setEnabledAndVisible(isApplicableFileType);
 
 //            e.getPresentation().setEnabledAndVisible(editor != null);
-        }
+	}
 
-
-    }
+}

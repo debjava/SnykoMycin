@@ -1,5 +1,6 @@
 package com.ddlab.rnd.setting;
 
+import com.ddlab.rnd.common.util.Constants;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
@@ -53,7 +54,8 @@ public class SynkoMycinSettings implements PersistentStateComponent<SynkoMycinSe
         this.llmApiEndPointUri = state.llmApiEndPointUri;
 
         // For Snyk
-        this.snykUriTxt = state.snykUriTxt;
+        this.snykUriTxt = (state.snykUriTxt == null || state.snykUriTxt.isEmpty()) ? Constants.DEFAULT_SNYK_URI : state.snykUriTxt;
+//        this.snykUriTxt = state.snykUriTxt;
         this.snykTokenTxt = state.snykTokenTxt;
         this.snykOrgComboItems = state.snykOrgComboItems;
         this.snykOrgComboSelection = state.snykOrgComboSelection;
