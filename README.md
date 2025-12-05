@@ -24,7 +24,7 @@ To be updated later
 
 ## Contributor
 
-**mishrd5**
+**Debadatta Mishra**
 
 ## License
 A free and open source project.
