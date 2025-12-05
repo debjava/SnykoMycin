@@ -1,0 +1,9 @@
+SynkoMycin
+-----------
+1. Find the icons ------------ Done
+2. Prepare the description
+3. Reorganize the build ------ Done
+4. Reorganize the plugin.xml ----- Done
+5. Change the log file name ------ Done
+6. ProgressBar ..... Done
+

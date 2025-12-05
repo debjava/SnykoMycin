@@ -2,6 +2,7 @@ package com.ddlab.rnd.ui.util;
 
 
 import com.ddlab.rnd.ai.AgentUtil;
+import com.ddlab.rnd.common.util.Constants;
 import com.ddlab.rnd.exception.InvalidTokenException;
 import com.ddlab.rnd.setting.SynkoMycinSettings;
 import com.ddlab.rnd.setting.ui.SnykoMycinSettingComponent;
@@ -165,7 +166,11 @@ public class BasicUiUtil {
     public static void resetSnykPanel(SynkoMycinSettings settings, SnykoMycinSettingComponent component) {
         // For Snyk
         SnykDetailsPanel snykPanel = (SnykDetailsPanel) component.getSnykPanel();
-        snykPanel.getSnykUriTxt().setText(settings.getSnykUriTxt());
+        if(settings.getSnykUriTxt() == null || settings.getSnykUriTxt().isEmpty()) {
+            snykPanel.getSnykUriTxt().setText(Constants.DEFAULT_SNYK_URI);
+        } else {
+            snykPanel.getSnykUriTxt().setText(settings.getSnykUriTxt());
+        }
         snykPanel.getSnykTokentxt().setText(settings.getSnykTokenTxt());
 
         JComboBox<String> snykOrgNameComboBox = snykPanel.getOrgNameComboBox();

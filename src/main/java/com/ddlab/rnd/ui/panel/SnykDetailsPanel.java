@@ -73,6 +73,7 @@ public class SnykDetailsPanel extends JPanel {
 
     private void createSnykUriText() {
         snykUriTxt = new JTextField();
+        snykUriTxt.setText("https://snyk.io/api/v1");
         GridBagConstraints gbc_snykUriTxt = new GridBagConstraints();
         gbc_snykUriTxt.insets = new Insets(0, 0, 5, 5);
         gbc_snykUriTxt.fill = GridBagConstraints.HORIZONTAL;
@@ -80,7 +81,7 @@ public class SnykDetailsPanel extends JPanel {
         gbc_snykUriTxt.gridy = 0;
         add(snykUriTxt, gbc_snykUriTxt);
         snykUriTxt.setColumns(10);
-        snykUriTxt.setText("https://snyk.io/api/v1"); // default snyk uri
+         // default snyk uri
     }
 
     private void createSnykTokenLabel() {
