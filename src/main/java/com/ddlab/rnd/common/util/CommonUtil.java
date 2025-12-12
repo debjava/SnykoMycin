@@ -23,7 +23,7 @@ public class CommonUtil {
             }
             // Read all bytes and convert to String (Java 17)
             fileContent = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-            log.debug("content: " + fileContent);
+//            log.debug("content: " + fileContent);
 
         } catch (IOException e) {
             log.error("Error while reading file from resources: {}" + filePath, e);

@@ -175,9 +175,10 @@ public class AgentUtil {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() != 200)
-            throw new RuntimeException("Unable to receive/process the answer from AI. \nIf the issues persist,Please contact the developer.");
+            throw new RuntimeException("Unable to receive/process the answer from AI. " +
+                    "\nPleaase try after sometime." +
+                    "\nIf the issues persist,Please contact the engineer.");
         String responseBody = response.body();
-        System.out.println("Response Body: " + responseBody);
         return responseBody;
     }
 
@@ -227,5 +228,11 @@ public class AgentUtil {
         String aiInputModelMsg = mapper.writeValueAsString(aiPromptModel);
         log.debug("JSON: \n" + aiInputModelMsg);
         return aiInputModelMsg;
+    }
+
+    public static String getFormedAIApiUrl(String aiApiUrl) {
+        return aiApiUrl = aiApiUrl.endsWith("/") ?
+                aiApiUrl + Constants.AI_CHAT_COMPLETIONS
+                : aiApiUrl + "/" + Constants.AI_CHAT_COMPLETIONS;
     }
 }

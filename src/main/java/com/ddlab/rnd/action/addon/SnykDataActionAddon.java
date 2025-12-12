@@ -13,12 +13,14 @@
 package com.ddlab.rnd.action.addon;
 
 import com.ddlab.rnd.ai.AgentUtil;
+import com.ddlab.rnd.ai.input.model.SnykFixInputModel;
+import com.ddlab.rnd.common.util.CommonUtil;
 import com.ddlab.rnd.common.util.Constants;
 import com.ddlab.rnd.setting.SynkoMycinSettings;
 import com.ddlab.rnd.snyk.ai.out.model.SnykProjectIssues;
 import com.ddlab.rnd.snyk.api.SnykApi;
 import com.ddlab.rnd.tool.view.SnykIssuesToolWindowFactory;
-import com.ddlab.rnd.tool.view.SnykoKeys;
+//import com.ddlab.rnd.tool.view.SnykoKeys;
 import com.ddlab.rnd.ui.util.CommonUIUtil;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -26,10 +28,12 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.psi.PsiFile;
 import com.intellij.ui.table.JBTable;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -40,6 +44,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 /**
@@ -74,6 +79,91 @@ public class SnykDataActionAddon {
         return table[0];
     }
 
+    public static JTable getSnykIssuesProgressively11(Project project) {
+//        CommonUIUtil.validateAiInputsFromSetting();
+        final JTable[] table = new JTable[1];
+        // Run in Progress
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, Constants.SNYK_ISSUES, true) {
+
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                try {
+                    indicator.setIndeterminate(true);
+                    indicator.setText(Constants.SNYK_ISSUES_PROGRESS_MSG);
+                    table[0] = getAllSnykIssuesAsTable(project);
+                } catch (Exception ex) {
+                    log.error("Error Messages to get Snyk Issues: {}", ex.getMessage());
+                    CommonUIUtil.showAppErrorMessage("Unable to get Synk Issues, Please try after some time");
+//                    CommonUIUtil.showAppErrorMessage(ex.getMessage());
+                }
+            }
+//            public void cancel() {
+//                table[0] = null;
+//            }
+        });
+        return table[0];
+    }
+
+    public static SnykProjectIssues getProjectSnykIssueProgressively(Project project) {
+        SnykProjectIssues[] allProjectIssue = new SnykProjectIssues[1];
+
+        ProgressManager.getInstance().run(new Task.Modal(null, Constants.SNYK_ISSUES, true) {
+
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                try {
+                    indicator.setIndeterminate(true);
+                    indicator.setText(Constants.SNYK_ISSUES_PROGRESS_MSG);
+                    allProjectIssue[0] = getAllSnykIssues(project);
+                    indicator.setText("Finishing all ...");
+                } catch (Exception ex) {
+                    log.error("Error Messages to get Snyk Issues: {}", ex.getMessage());
+                    CommonUIUtil.showAppErrorMessage(ex.getMessage());
+                }
+            }
+
+        });
+        return allProjectIssue[0];
+    }
+
+    public static SnykProjectIssues getAllSnykIssues(Project project) throws RuntimeException {
+        SnykProjectIssues allProjectIssue = null;
+        String projectName = project.getName();
+        log.debug("Display Action Project Name: " + projectName);
+        SynkoMycinSettings setting = SynkoMycinSettings.getInstance();
+        String selectedLlmModelName = setting.getLlmModelComboSelection();
+        String llmModel = selectedLlmModelName.split("~")[0];
+        log.debug("What is the Actual LLM Model Name: " + llmModel);
+        String snykProjectIssuesJsonTxt = getRawProjectIssues(projectName);
+        String aiInputModelMsg = SnykApi.getSnykProjectIssueInputAIPromt(snykProjectIssuesJsonTxt, llmModel);
+        allProjectIssue = getModifiedAiSnykIssueObject(aiInputModelMsg);
+        return allProjectIssue;
+    }
+
+    public static String getFixableSnykIssuesAsJsonText(Project project) {
+        SnykProjectIssues allProjectIssue = getAllSnykIssues(project);
+        List<SnykFixInputModel> fixModelList = allProjectIssue.getIssues().stream().filter(value -> value.getFixInfo().getIsFixable()).map(value -> {
+            SnykFixInputModel fixModel = new SnykFixInputModel();
+            fixModel.setArtifactName(value.getPkgName());
+            fixModel.setFixedVersions(value.getFixInfo().getFixedIn());
+
+            return fixModel;
+        }).collect(Collectors.toList());
+
+        String jsonText = getJsonContentAsText(fixModelList);
+        log.debug("Final Input JSON: " + jsonText);
+        return jsonText;
+    }
+
+    public static String getJsonContentAsText(List<SnykFixInputModel> fixModelList) {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
+        String jsonText = writer.writeValueAsString(fixModelList);
+        log.debug("Final Input JSON: " + jsonText);
+        return jsonText;
+    }
+
+
     public static JTable getSnykIssuesProgressively(Project project) {
 //        CommonUIUtil.validateAiInputsFromSetting();
         final JTable[] table = new JTable[1];
@@ -85,49 +175,67 @@ public class SnykDataActionAddon {
                 try {
                     indicator.setIndeterminate(true);
                     indicator.setText(Constants.SNYK_ISSUES_PROGRESS_MSG);
-                    table[0] = SnykDataActionAddon.getAllSnykIssuesAsTable(project);
+                    table[0] = getAllSnykIssuesAsTable(project);
+                    indicator.setText("Finishing all ...");
                 } catch (Exception ex) {
                     log.error("Error Messages to get Snyk Issues: {}", ex.getMessage());
                     CommonUIUtil.showAppErrorMessage(ex.getMessage());
                 }
             }
+
+//            @Override
+//            public void onFinished() {
+//                table[0] = SnykDataActionAddon.getAllSnykIssuesAsTable(project);
+//            }
+
 //            public void cancel() {
 //                table[0] = null;
 //            }
+
         });
         return table[0];
     }
 
 
-    /**
-     * Update snyk issue tool W indow.
-     *
-     * @param project the project
-     * @param table   the table
-     */
-    public static void updateSnykIssueToolWindow(Project project, JTable table) {
-        ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(Constants.SNYK_ISSUES);
+//    /**
+//     * Update snyk issue tool W indow.
+//     *
+//     * @param project the project
+//     * @param table   the table
+//     */
+//    public static void updateSnykIssueToolWindow(Project project, JTable table) {
+//        ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(Constants.SNYK_ISSUES);
+////        ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("MyToolWindow");
+//
+//
+//
+//
+//
+////        if (toolWindow != null) {
+////            toolWindow.show();
+////        }
+//
+//
 
-//        if (toolWindow != null) {
-//            toolWindow.show();
-//        }
-        SnykIssuesToolWindowFactory factory = project.getUserData(SnykoKeys.SNYKO_TOOLWINDOW_FACTORY);
-        if (factory != null) {
-            if(table != null && table.getModel().getRowCount() > 0) {
-//                factory.updateData("Updated from Snyk Data Action!", table);
-                if (toolWindow != null) {
-                    toolWindow.show();
-                }
-            }
-//            else {
-//                factory.updateData("Updated from Snyk Data Action!", table);
-//            }
-            factory.updateData("Updated from Snyk Data Action!", table);
-            // Get Table along with Data
-//            factory.updateData("Updated from Snyk Data Action!", table);
-        }
+    /// /        SnykIssuesToolWindowFactory factory = project.getUserData(SnykoKeys.SNYKO_TOOLWINDOW_FACTORY);
+    /// /        log.debug("Factory: " + factory);
+    /// /        if (factory != null) {
+    /// /            if(table != null && table.getModel().getRowCount() > 0) {
+    /// ///                factory.updateData("Updated from Snyk Data Action!", table);
+    /// /                if (toolWindow != null) {
+    /// /                    toolWindow.show();
+    /// /                }
+    /// /            }
+    /// ///            else {
+    /// ///                factory.updateData("Updated from Snyk Data Action!", table);
+    /// ///            }
+    /// /            factory.updateData("Updated from Snyk Data Action!", table);
+    /// /            // Get Table along with Data
+    /// ///            factory.updateData("Updated from Snyk Data Action!", table);
+    /// /        }
+//
+//    }
 
-    }
 
     /**
      * Gets the all snyk issues as table.
@@ -138,17 +246,18 @@ public class SnykDataActionAddon {
     public static JTable getAllSnykIssuesAsTable(Project project) throws RuntimeException {
         SnykProjectIssues allProjectIssue = null;
         String projectName = project.getName();
+//        log.debug("Project Name: " + projectName);
         log.debug("Display Action Project Name: " + projectName);
         SynkoMycinSettings setting = SynkoMycinSettings.getInstance();
 //        try {
-            String selectedLlmModelName = setting.getLlmModelComboSelection();
+        String selectedLlmModelName = setting.getLlmModelComboSelection();
 //        log.debug("What is the selected LLM Model Name: " + selectedLlmModelName);
-            String llmModel = selectedLlmModelName.split("~")[0];
-            log.debug("What is the Actual LLM Model Name: " + llmModel);
-            String snykProjectIssuesJsonTxt = getRawProjectIssues(projectName);
-            String aiInputModelMsg = SnykApi.getSnykProjectIssueInputAIPromt(snykProjectIssuesJsonTxt, llmModel);
+        String llmModel = selectedLlmModelName.split("~")[0];
+        log.debug("What is the Actual LLM Model Name: " + llmModel);
+        String snykProjectIssuesJsonTxt = getRawProjectIssues(projectName);
+        String aiInputModelMsg = SnykApi.getSnykProjectIssueInputAIPromt(snykProjectIssuesJsonTxt, llmModel);
 //        log.debug("Input Model: \n" + aiInputModelMsg);
-            allProjectIssue = getModifiedAiSnykIssueObject(aiInputModelMsg);
+        allProjectIssue = getModifiedAiSnykIssueObject(aiInputModelMsg);
 //        log.debug("All Project Issues: " + allProjectIssue);
 //        } catch (Exception e) {
 //            throw e;
@@ -173,13 +282,12 @@ public class SnykDataActionAddon {
             snykToken = !snykToken.startsWith(Constants.TOKEN_SPACE) ? Constants.TOKEN_SPACE + snykToken : snykToken;
             Map<String, String> snykOrgNameIdMap = setting.getSnykOrgNameIdMap();
             String orgId = snykOrgNameIdMap.get(snykOrgComboSelection);
-            log.debug("orgId: " + orgId);
+//            log.debug("orgId: " + orgId);
             snykRawResponse = SnykApi.getSnykIssuesAsJsonText(orgId, projectName, snykToken);
         } catch (Exception e) {
             throw new RuntimeException("Unable to get response from Snyk. \nPlease recheck the Snyk details.\n If the issue persists, please contact developer");
         }
         return snykRawResponse;
-
 
 
 //        return SnykApi.getSnykIssuesAsJsonText(orgId, projectName, snykToken);
@@ -205,7 +313,7 @@ public class SnykDataActionAddon {
         try {
             bearerToken = AgentUtil.getAIBearerToken(clientId, clientSecret, tokenUrl);
         } catch (Exception e) {
-            log.error("Error while retrieving token for AI for Synk Issues...", e);
+//            log.error("Error while retrieving token for AI for Synk Issues...", e);
             throw new RuntimeException("Error while retrieving token from AI, recheck AI input. \nIf the issue persists, please contact developer...");
         }
 
@@ -303,5 +411,40 @@ public class SnykDataActionAddon {
             column.setPreferredWidth(width);
         }
     }
+
+    public static String getAIInputPrompt(PsiFile file, String projectIssuesAsJsonText) {
+        String buildFileName = file.getName();
+        String buildFileText = file.getFileDocument().getText();
+        String initialPrompt = CommonUtil.getProperty("snyk.fix.input.prompt");
+        String smallJsonPromtText = initialPrompt.replaceAll("\\{buildFileName\\}", buildFileName);
+        smallJsonPromtText = smallJsonPromtText.replaceAll("\\{innerJson\\}", projectIssuesAsJsonText);
+        smallJsonPromtText = smallJsonPromtText.replaceAll("\\{buildContents\\}", Matcher.quoteReplacement(buildFileText));
+
+        return smallJsonPromtText;
+    }
+
+    public static String getBuildUpdateGenAIAnswer(PsiFile psiFile, String projectIssuesAsJsonText) throws Exception {
+        SynkoMycinSettings setting = SynkoMycinSettings.getInstance();
+        String clientId = setting.getClientIdStr();
+        String clientSecret = setting.getClientSecretStr();
+        String tokenUrl = setting.getOauthEndPointUri();
+
+        String selectedLlmModelName = setting.getLlmModelComboSelection();
+        String llmModel = selectedLlmModelName.split("~")[0];
+
+        String bearerToken = AgentUtil.getAIBearerToken(clientId, clientSecret, tokenUrl);
+
+        String aiInputPromptMsg = SnykDataActionAddon.getAIInputPrompt(psiFile, projectIssuesAsJsonText);
+        log.debug("Final Generated AI Input Prompt Text: " + aiInputPromptMsg);
+
+        String aiInputModelMsg = AgentUtil.getFormedPrompt(aiInputPromptMsg, llmModel);
+        log.debug("Final AI Input Final Prompt: " + aiInputModelMsg);
+
+        String aiApiUrl = AgentUtil.getFormedAIApiUrl(setting.getLlmApiEndPointUri());
+        String aiResponse = AgentUtil.getOnlyAnswerFromAI(aiApiUrl, bearerToken, aiInputModelMsg);
+
+        return aiResponse;
+    }
+
 
 }

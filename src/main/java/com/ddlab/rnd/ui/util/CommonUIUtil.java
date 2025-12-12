@@ -5,11 +5,31 @@ import com.ddlab.rnd.setting.SynkoMycinSettings;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class CommonUIUtil {
+
+
+    public static void showAppSuccessfulMessage(String message) {
+        ApplicationManager.getApplication().invokeLater(() -> {
+            Messages.showInfoMessage(message, Constants.SNYKO_TITLE);
+        });
+    }
 
     public static void showAppErrorMessage(String message) {
         ApplicationManager.getApplication().invokeLater(() -> {
@@ -35,6 +55,8 @@ public class CommonUIUtil {
         String clientSecret = setting.getClientSecretStr();
         String oAuthTokenUrl = setting.getOauthEndPointUri();
         String aiApiEndPointUri = setting.getLlmApiEndPointUri();
+        String snykApiEndPointUri = setting.getSnykUriTxt();
+        String snykToken = setting.getSnykTokenTxt();
 
         if (clientId == null || clientId.isEmpty()) {
             Messages.showErrorDialog("Client Id cannot be empty", Constants.ERR_TITLE);
@@ -52,5 +74,56 @@ public class CommonUIUtil {
             Messages.showErrorDialog("LLM Api End Point cannot be empty", Constants.ERR_TITLE);
             throw new IllegalArgumentException("LLM Api End Point cannot be empty!");
         }
+
+        if(snykApiEndPointUri == null || snykApiEndPointUri.isEmpty()) {
+            Messages.showErrorDialog("Snyk API URI cannot be empty", Constants.ERR_TITLE);
+            throw new IllegalArgumentException("Snyk API URI cannot be empty!");
+        }
+
+        if (snykToken == null || snykToken.isEmpty()) {
+            Messages.showErrorDialog("Snyk Token cannot be empty", Constants.ERR_TITLE);
+            throw new IllegalArgumentException("Snyk Token cannot be empty!");
+        }
+
+    }
+
+    public static void createBackFile(Project project, String buildFileName) {
+        Date date = new Date();
+//        String dateFormat = "dd-MM-yyyy-HH-mm-ss";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Constants.DATE_FMT);
+        String formattedDate = simpleDateFormat.format(date);
+
+        String projectBasePath = project.getBasePath();
+//        log.debug("Project Base Path: " + projectBasePath);
+
+        File backupDir = new File(projectBasePath + "/Backup");
+        if (!backupDir.exists()) {
+            backupDir.mkdirs();
+        }
+        Path srcBasePath = Paths.get(projectBasePath, buildFileName);
+        Path backDestnFilePath = Paths.get(backupDir.getAbsolutePath(), buildFileName + "." + formattedDate);
+
+        try {
+//            Files.write(backFilePath, buildFileText.getBytes());
+            Files.copy(srcBasePath, backDestnFilePath);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+
+        // Refresh the project
+        VirtualFile baseDir = project.getBaseDir();
+        if (baseDir != null) {
+            baseDir.refresh(true, true); // recursive refresh
+        }
+    }
+
+    public static void updateBuildFileContents(PsiFile psiFile, Project project, String buildContents) {
+        VirtualFile virtualFile = psiFile.getVirtualFile();
+        WriteCommandAction.runWriteCommandAction(project, () -> {
+            Document document = FileDocumentManager.getInstance().getDocument(virtualFile);
+            if(document != null) {
+                document.setText(buildContents);
+            }
+        });
     }
 }
