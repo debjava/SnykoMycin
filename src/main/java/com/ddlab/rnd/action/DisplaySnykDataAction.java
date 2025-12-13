@@ -15,6 +15,7 @@ package com.ddlab.rnd.action;
 import com.ddlab.rnd.action.addon.SnykDataActionAddon;
 import com.ddlab.rnd.common.util.Constants;
 import com.ddlab.rnd.ui.util.CommonUIUtil;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -49,49 +50,39 @@ public class DisplaySnykDataAction extends AnAction {
 		if (project == null)
 			return;
         try {
+			log.debug("Display Action Project Name: " + project.getName());
             CommonUIUtil.validateAiInputsFromSetting();
-            JTable table = SnykDataActionAddon.getSnykIssuesProgressively(project);
-			ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(Constants.SNYK_ISSUES);
-			Content content = toolWindow.getContentManager().getContent(0);
-			JComponent component = content.getComponent();
-			if(component != null && component instanceof JScrollPane scrollPane) {
-                scrollPane.setViewportView(table);
-			}
-			if(toolWindow != null) {
+//            JTable table = SnykDataActionAddon.getSnykIssuesProgressively(project);
+
+			JTable table = SnykDataActionAddon.getProgressiveSnykIssues(project);
+
+
+			if(table != null && table.getRowCount() >= 0) {
+				ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(Constants.SNYK_ISSUES);
+				Content content = toolWindow.getContentManager().getContent(0);
+				JComponent component = content.getComponent();
+				if(component instanceof JScrollPane scrollPane) {
+					scrollPane.setViewportView(table);
+				}
 				toolWindow.show();
 			}
 
-
-
-
-
-//			JTable table = SnykDataActionAddon.getSnykIssuesProgressively11(project);
-//            SnykDataActionAddon.updateSnykIssueToolWindow(project, table);
-        } catch (Exception e) {
+        }
+		catch (Exception e) {
             log.error("Exception for DisplaySnykDataAction: {}", e.getMessage());
         }
-
-
 	}
 
 	@Override
 	public void update(AnActionEvent e) {
-		// Control visibility and enablement of the action
-		// e.g., enable only if an editor is active
-//            VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
 		Editor editor = e.getData(CommonDataKeys.EDITOR);
 		String fileName = editor.getVirtualFile().getName();
-		System.out.println("Update File Name: " + fileName);
-		String fileType = editor.getVirtualFile().getFileType().getName();
-		System.out.println("Update File Type: " + fileType);
-
 		boolean isApplicableFileType = applicableFileTypes.contains(fileName);
-
 		e.getPresentation().setEnabled(isApplicableFileType);
-//            e.getPresentation().setEnabledAndVisible(isApplicableFileType);
-
-//            e.getPresentation().setEnabledAndVisible(editor != null);
 	}
 
-
+	@Override
+	public @NotNull ActionUpdateThread getActionUpdateThread() {
+		return ActionUpdateThread.EDT; // UI-safe
+	}
 }

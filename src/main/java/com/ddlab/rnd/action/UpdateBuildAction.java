@@ -13,47 +13,20 @@
 package com.ddlab.rnd.action;
 
 import com.ddlab.rnd.action.addon.SnykDataActionAddon;
-import com.ddlab.rnd.ai.AgentUtil;
-import com.ddlab.rnd.ai.input.model.SnykFixInputModel;
-import com.ddlab.rnd.common.util.CommonUtil;
 import com.ddlab.rnd.common.util.Constants;
-import com.ddlab.rnd.setting.SynkoMycinSettings;
-import com.ddlab.rnd.snyk.ai.out.model.SnykProjectIssues;
 import com.ddlab.rnd.ui.util.CommonUIUtil;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.command.WriteCommandAction;
-import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.psi.PsiFile;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.maven.model.Build;
-import org.bouncycastle.oer.its.ieee1609dot2.basetypes.IValue;
 import org.jetbrains.annotations.NotNull;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.ObjectWriter;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.stream.Collectors;
 
 /**
  * The Class UpdateBuildAction.
@@ -97,9 +70,11 @@ public class UpdateBuildAction extends AnAction {
         boolean isApplicableFileType = Constants.APPLICABLE_FILE_TYPES.contains(fileName);
 
         e.getPresentation().setEnabled(isApplicableFileType);
-//            e.getPresentation().setEnabledAndVisible(isApplicableFileType);
+    }
 
-//            e.getPresentation().setEnabledAndVisible(editor != null);
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.EDT; // UI-safe
     }
 
     // ~~~~~~~~~~~~~~ all private methods below ~~~~~~~~~~~

@@ -42,5 +42,8 @@ public class Constants {
 
     public static final List<String> APPLICABLE_FILE_TYPES = List.of("pom.xml", "build.gradle", "package.json");
     public static final String DATE_FMT = "dd-MM-yyyy-HH-mm-ss";
-
+    public static final String BACKUP_DIR = "Backup";
+    public static final String SNYK_FIX_INPUT_PROMPT = "snyk.fix.input.prompt";
+    public static final String SAST = "sast";
+    public static final String MODEL_PATH = "/models";
 }

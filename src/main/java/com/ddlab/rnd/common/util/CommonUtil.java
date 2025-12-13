@@ -23,11 +23,8 @@ public class CommonUtil {
             }
             // Read all bytes and convert to String (Java 17)
             fileContent = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-//            log.debug("content: " + fileContent);
-
         } catch (IOException e) {
-            log.error("Error while reading file from resources: {}" + filePath, e);
-            e.printStackTrace();
+            log.error("Error while reading file from resources: {}", filePath, e);
         }
         return fileContent;
     }
@@ -50,31 +47,10 @@ public class CommonUtil {
                 throw new IOException("Resource not found: "+propertiesFileName);
             }
             properties.load(inputStream);
-//            log.debug("properties: " + properties);
-
         } catch (IOException e) {
-            log.error("Error while reading file from resources: {}" + propertiesFileName, e);
-            e.printStackTrace();
+            log.error("Error while reading file from resources: ",  e);
         }
 
-
-
-
-
-
-
-
-
-
-
-//        try (InputStream input = ConfigUtil.class.getClassLoader().getResourceAsStream(propertiesFileName)) {
-//            // Load the properties file
-//            properties.load(input);
-//            log.debug("properties: " + properties);
-//        } catch (IOException ex) {
-//            log.error("Error while reading config file from resources: {}" + propertiesFileName, ex);
-//            ex.printStackTrace();
-//        }
         return properties;
     }
 

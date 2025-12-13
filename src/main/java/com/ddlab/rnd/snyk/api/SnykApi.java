@@ -3,6 +3,7 @@ package com.ddlab.rnd.snyk.api;
 import com.ddlab.rnd.ai.AgentUtil;
 import com.ddlab.rnd.common.util.CommonUtil;
 import com.ddlab.rnd.common.util.Constants;
+import com.ddlab.rnd.exception.NoSuchSnykProjectFoundException;
 import com.ddlab.rnd.snyk.project.model.ProjectIdData;
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.ObjectMapper;
@@ -19,8 +20,12 @@ import java.util.List;
 @Slf4j
 public class SnykApi {
 
-    public static List<String> getProjectList(String snykFetchProjectIdUri, String snykToken) {
+    public static List<String> getProjectList(String snykFetchProjectIdUri, String snykToken) throws RuntimeException{
         String jsonTextResponse = getProjectIdAsJsonText(snykFetchProjectIdUri, snykToken);
+//        log.debug("Project List Json Response: {}", jsonTextResponse);
+        if(jsonTextResponse == null) {
+            throw new NoSuchSnykProjectFoundException("No response received or project not found in the Snyk. ");
+        }
         return getProjectIdAsList(jsonTextResponse);
     }
 
@@ -30,29 +35,35 @@ public class SnykApi {
         HttpClient client = HttpClient.newHttpClient();
 
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(snykFetchProjectIdUri))
-                .header("Content-Type", "application/json").header("Authorization", snykToken).GET().build();
+                .header(Constants.CONTENT_TYPE, Constants.JSON_TYPE)
+                .header(Constants.AUTHORIZATION, snykToken)
+                .GET().build();
         try {
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
+//            log.debug("Response Status Code: {}", response.statusCode());
+            if (response.statusCode() == 200) {
+                responseBody = response.body();
+            }
+            if(responseBody == null) {
+                throw new NoSuchSnykProjectFoundException("No response received or project not found in the Snyk. ");
+            }
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            log.error("Exception in getProjectIdAsJsonText: ", e);
         }
-        responseBody = response.body();
+//        log.debug("What is the Snyk Response Body: {}", responseBody);
         return responseBody;
     }
 
     public static List<String> getProjectIdAsList(String jsonTextResponse) {
-
         List<String> projectIdList = new LinkedList<String>();
-
         ObjectMapper mapper = new ObjectMapper();
         ProjectIdData projectIdData = mapper.readValue(jsonTextResponse, ProjectIdData.class);
-        log.debug("Project Id Data: " + projectIdData);
+//        log.debug("Project Id Data: " + projectIdData);
 
         projectIdData.getProjectIdData().forEach(value -> {
-
             String type = value.getAttributes().getType();
             String name = value.getAttributes().getName();
-            if ( !type.equalsIgnoreCase("sast")) {
+            if (!type.equalsIgnoreCase(Constants.SAST)) {
                 projectIdList.add(value.getId());
             }
 
@@ -66,25 +77,25 @@ public class SnykApi {
         HttpClient client = HttpClient.newHttpClient();
 
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(projectIssueFilledUri))
-//                .header("Content-Type", "application/json").header("Authorization", snykToken)
                 .header(Constants.CONTENT_TYPE, Constants.JSON_TYPE).header(Constants.AUTHORIZATION, snykToken)
                 .POST(HttpRequest.BodyPublishers.ofString(inputContent)).build();
         try {
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            log.debug("Exception in getSnykProjectIssuesAsJsonText: ", e);
         }
         responseBody = response.body();
         return responseBody;
     }
 
-    public static String getSnykIssuesAsJsonText(String orgId, String projectName, String snykToken) {
+    public static String getSnykIssuesAsJsonText(String orgId, String projectName, String snykToken) throws RuntimeException{
         String snykFetchProjectIdUri = CommonUtil.getProperty("snyk.get.project.uri");
         snykFetchProjectIdUri = MessageFormat.format(snykFetchProjectIdUri, orgId, projectName);
-        List<String> projectList = SnykApi.getProjectList(snykFetchProjectIdUri, snykToken);
+        List<String> projectList = getProjectList(snykFetchProjectIdUri, snykToken);
+
         // Pick first project id
         String projectId = projectList.get(0);
-        log.debug("Snyk projectId: " + projectId);
+        log.debug("Snyk Project Id: " + projectId);
 
         String snykProjectIssueUri = CommonUtil.getProperty("snyk.project.issue.uri");
         String projectIssueFilledUri = MessageFormat.format(snykProjectIssueUri, orgId, projectId);
@@ -97,7 +108,7 @@ public class SnykApi {
     public static String getSnykProjectIssueInputAIPromt(String snykProjectIssuesJsonTxt, String aiModelName) {
         String initialPrompt = CommonUtil.getProperty("make.snyk.json.required.prompt");
         String smallJsonPromtText = initialPrompt.replaceAll("\\{innerJson\\}", snykProjectIssuesJsonTxt);
-        log.debug("smallJsonPromtText: " + smallJsonPromtText);
+//        log.debug("smallJsonPromtText: " + smallJsonPromtText);
         String aiInputModelMsg = AgentUtil.getFormedPrompt(smallJsonPromtText, aiModelName);
 
         return aiInputModelMsg;

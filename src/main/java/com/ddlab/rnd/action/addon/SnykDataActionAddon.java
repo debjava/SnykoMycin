@@ -16,18 +16,15 @@ import com.ddlab.rnd.ai.AgentUtil;
 import com.ddlab.rnd.ai.input.model.SnykFixInputModel;
 import com.ddlab.rnd.common.util.CommonUtil;
 import com.ddlab.rnd.common.util.Constants;
+import com.ddlab.rnd.exception.NoSnykIssueFoundException;
 import com.ddlab.rnd.setting.SynkoMycinSettings;
 import com.ddlab.rnd.snyk.ai.out.model.SnykProjectIssues;
 import com.ddlab.rnd.snyk.api.SnykApi;
-import com.ddlab.rnd.tool.view.SnykIssuesToolWindowFactory;
-//import com.ddlab.rnd.tool.view.SnykoKeys;
 import com.ddlab.rnd.ui.util.CommonUIUtil;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.table.JBTable;
 import lombok.extern.slf4j.Slf4j;
@@ -55,67 +52,23 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SnykDataActionAddon {
 
-    /**
-     * Gets the progressive snyk project issues table.
-     *
-     * @param project the project
-     * @return the progressive snyk project issues table
-     */
-    public static JTable getProgressiveSnykProjectIssuesTable(Project project) {
+    public static JTable getProgressiveSnykIssues(Project project) {
         final JTable[] table = new JTable[1];
-        // Run in Progress
-        ProgressManager.getInstance().run(new Task.Modal(null, Constants.SNYK_ISSUES, true) {
-            @Override
-            public void run(@NotNull ProgressIndicator indicator) {
-                indicator.setIndeterminate(true);
-                indicator.setText(Constants.SNYK_ISSUES_PROGRESS_MSG);
-                // Fetching Snyk Issues a long-running task
-                table[0] = SnykDataActionAddon.getAllSnykIssuesAsTable(project);
-            }
-//            public void cancel() {
-//                table[0] = null;
-//            }
-        });
-        return table[0];
-    }
-
-    public static JTable getSnykIssuesProgressively11(Project project) {
-//        CommonUIUtil.validateAiInputsFromSetting();
-        final JTable[] table = new JTable[1];
-        // Run in Progress
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, Constants.SNYK_ISSUES, true) {
-
+//        ProgressManager.getInstance().run(new Task.Backgroundable(null, Constants.SNYKOMYCIN_PROGRESS_TITLE, true) {
+        ProgressManager.getInstance().run(new Task.Modal(null, Constants.SNYKOMYCIN_PROGRESS_TITLE, true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
                     indicator.setIndeterminate(true);
                     indicator.setText(Constants.SNYK_ISSUES_PROGRESS_MSG);
-                    table[0] = getAllSnykIssuesAsTable(project);
-                } catch (Exception ex) {
-                    log.error("Error Messages to get Snyk Issues: {}", ex.getMessage());
-                    CommonUIUtil.showAppErrorMessage("Unable to get Synk Issues, Please try after some time");
-//                    CommonUIUtil.showAppErrorMessage(ex.getMessage());
-                }
-            }
-//            public void cancel() {
-//                table[0] = null;
-//            }
-        });
-        return table[0];
-    }
-
-    public static SnykProjectIssues getProjectSnykIssueProgressively(Project project) {
-        SnykProjectIssues[] allProjectIssue = new SnykProjectIssues[1];
-
-        ProgressManager.getInstance().run(new Task.Modal(null, Constants.SNYK_ISSUES, true) {
-
-            @Override
-            public void run(@NotNull ProgressIndicator indicator) {
-                try {
-                    indicator.setIndeterminate(true);
-                    indicator.setText(Constants.SNYK_ISSUES_PROGRESS_MSG);
-                    allProjectIssue[0] = getAllSnykIssues(project);
+                    String snykProjectIssuesJsonTxt =  getRawSnykProjectIssuesAsText(project);
+                    indicator.setText("Analyzing and Consolidating Issues ...");
+                    SnykProjectIssues allProjectIssue = getAIManipulatedSnykIssues(snykProjectIssuesJsonTxt);
+                    table[0] = getUpdatedSnykIssueTable(allProjectIssue);
                     indicator.setText("Finishing all ...");
+                } catch (NoSnykIssueFoundException ex) {
+                    log.debug("No issues found in Snyk");
+                    CommonUIUtil.showAppSuccessfulMessage("No Snyk Issues Found");
                 } catch (Exception ex) {
                     log.error("Error Messages to get Snyk Issues: {}", ex.getMessage());
                     CommonUIUtil.showAppErrorMessage(ex.getMessage());
@@ -123,53 +76,13 @@ public class SnykDataActionAddon {
             }
 
         });
-        return allProjectIssue[0];
+        return table[0];
     }
 
-    public static SnykProjectIssues getAllSnykIssues(Project project) throws RuntimeException {
-        SnykProjectIssues allProjectIssue = null;
-        String projectName = project.getName();
-        log.debug("Display Action Project Name: " + projectName);
-        SynkoMycinSettings setting = SynkoMycinSettings.getInstance();
-        String selectedLlmModelName = setting.getLlmModelComboSelection();
-        String llmModel = selectedLlmModelName.split("~")[0];
-        log.debug("What is the Actual LLM Model Name: " + llmModel);
-        String snykProjectIssuesJsonTxt = getRawProjectIssues(projectName);
-        String aiInputModelMsg = SnykApi.getSnykProjectIssueInputAIPromt(snykProjectIssuesJsonTxt, llmModel);
-        allProjectIssue = getModifiedAiSnykIssueObject(aiInputModelMsg);
-        return allProjectIssue;
-    }
-
-    public static String getFixableSnykIssuesAsJsonText(Project project) {
-        SnykProjectIssues allProjectIssue = getAllSnykIssues(project);
-        List<SnykFixInputModel> fixModelList = allProjectIssue.getIssues().stream().filter(value -> value.getFixInfo().getIsFixable()).map(value -> {
-            SnykFixInputModel fixModel = new SnykFixInputModel();
-            fixModel.setArtifactName(value.getPkgName());
-            fixModel.setFixedVersions(value.getFixInfo().getFixedIn());
-
-            return fixModel;
-        }).collect(Collectors.toList());
-
-        String jsonText = getJsonContentAsText(fixModelList);
-        log.debug("Final Input JSON: " + jsonText);
-        return jsonText;
-    }
-
-    public static String getJsonContentAsText(List<SnykFixInputModel> fixModelList) {
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
-        String jsonText = writer.writeValueAsString(fixModelList);
-        log.debug("Final Input JSON: " + jsonText);
-        return jsonText;
-    }
-
-
+    @Deprecated
     public static JTable getSnykIssuesProgressively(Project project) {
-//        CommonUIUtil.validateAiInputsFromSetting();
         final JTable[] table = new JTable[1];
-        // Run in Progress
-        ProgressManager.getInstance().run(new Task.Modal(null, Constants.SNYK_ISSUES, true) {
-
+        ProgressManager.getInstance().run(new Task.Modal(null, Constants.SNYKOMYCIN_PROGRESS_TITLE, true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
@@ -177,6 +90,9 @@ public class SnykDataActionAddon {
                     indicator.setText(Constants.SNYK_ISSUES_PROGRESS_MSG);
                     table[0] = getAllSnykIssuesAsTable(project);
                     indicator.setText("Finishing all ...");
+                } catch (NoSnykIssueFoundException ex) {
+                    log.debug("No issues found in Snyk");
+                    CommonUIUtil.showAppSuccessfulMessage("No Snyk Issues Found");
                 } catch (Exception ex) {
                     log.error("Error Messages to get Snyk Issues: {}", ex.getMessage());
                     CommonUIUtil.showAppErrorMessage(ex.getMessage());
@@ -196,45 +112,68 @@ public class SnykDataActionAddon {
         return table[0];
     }
 
+    public static SnykProjectIssues getAllSnykIssues(Project project) throws RuntimeException {
+        SnykProjectIssues allProjectIssue = null;
+        String projectName = project.getName();
+//        log.debug("Display Action Project Name: " + projectName);
+        SynkoMycinSettings setting = SynkoMycinSettings.getInstance();
+        String selectedLlmModelName = setting.getLlmModelComboSelection();
+        String llmModel = selectedLlmModelName.split("~")[0];
+        log.debug("Selected Actual LLM Model Name ?: " + llmModel);
+        String snykProjectIssuesJsonTxt = getRawProjectIssues(projectName);
+        String aiInputModelMsg = SnykApi.getSnykProjectIssueInputAIPromt(snykProjectIssuesJsonTxt, llmModel);
+        allProjectIssue = getModifiedAiSnykIssueObject(aiInputModelMsg);
+        return allProjectIssue;
+    }
 
-//    /**
-//     * Update snyk issue tool W indow.
-//     *
-//     * @param project the project
-//     * @param table   the table
-//     */
-//    public static void updateSnykIssueToolWindow(Project project, JTable table) {
-//        ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(Constants.SNYK_ISSUES);
-////        ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("MyToolWindow");
-//
-//
-//
-//
-//
-////        if (toolWindow != null) {
-////            toolWindow.show();
-////        }
-//
-//
+    public static String getFixableSnykIssuesAsJsonText(Project project) {
+        SnykProjectIssues allProjectIssue = getAllSnykIssues(project);
+        List<SnykFixInputModel> fixModelList = allProjectIssue.getIssues().stream().filter(value -> value.getFixInfo().getIsFixable()).map(value -> {
+            SnykFixInputModel fixModel = new SnykFixInputModel();
+            fixModel.setArtifactName(value.getPkgName());
+            fixModel.setFixedVersions(value.getFixInfo().getFixedIn());
 
-    /// /        SnykIssuesToolWindowFactory factory = project.getUserData(SnykoKeys.SNYKO_TOOLWINDOW_FACTORY);
-    /// /        log.debug("Factory: " + factory);
-    /// /        if (factory != null) {
-    /// /            if(table != null && table.getModel().getRowCount() > 0) {
-    /// ///                factory.updateData("Updated from Snyk Data Action!", table);
-    /// /                if (toolWindow != null) {
-    /// /                    toolWindow.show();
-    /// /                }
-    /// /            }
-    /// ///            else {
-    /// ///                factory.updateData("Updated from Snyk Data Action!", table);
-    /// ///            }
-    /// /            factory.updateData("Updated from Snyk Data Action!", table);
-    /// /            // Get Table along with Data
-    /// ///            factory.updateData("Updated from Snyk Data Action!", table);
-    /// /        }
-//
-//    }
+            return fixModel;
+        }).collect(Collectors.toList());
+
+        String jsonText = getJsonContentAsText(fixModelList);
+//        log.debug("Final Input JSON: " + jsonText);
+        return jsonText;
+    }
+
+    public static String getJsonContentAsText(List<SnykFixInputModel> fixModelList) {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
+        String jsonText = writer.writeValueAsString(fixModelList);
+//        log.debug("Final Input JSON: " + jsonText);
+        return jsonText;
+    }
+
+
+
+    // 1............
+    public static String getRawSnykProjectIssuesAsText(Project project) throws RuntimeException {
+        String snykProjectIssuesJsonTxt = getRawProjectIssues(project.getName());
+//        log.debug("Temporary To be removed: snykProjectIssuesJsonTxt----->{}", snykProjectIssuesJsonTxt);
+        if (snykProjectIssuesJsonTxt.equalsIgnoreCase("{\"issues\":[]}")) {
+            throw new NoSnykIssueFoundException("No Snyk Issue Found.");
+        }
+        return snykProjectIssuesJsonTxt;
+    }
+
+    // 2 .................
+    public static SnykProjectIssues getAIManipulatedSnykIssues(String snykProjectIssuesJsonTxt) throws RuntimeException {
+        SnykProjectIssues allProjectIssue = null;
+
+        SynkoMycinSettings setting = SynkoMycinSettings.getInstance();
+        String selectedLlmModelName = setting.getLlmModelComboSelection();
+        String llmModel = selectedLlmModelName.split("~")[0];
+        String aiInputModelMsg = SnykApi.getSnykProjectIssueInputAIPromt(snykProjectIssuesJsonTxt, llmModel);
+//        log.debug("Input Model: \n" + aiInputModelMsg);
+        allProjectIssue = getModifiedAiSnykIssueObject(aiInputModelMsg);
+
+        return allProjectIssue;
+    }
 
 
     /**
@@ -245,24 +184,22 @@ public class SnykDataActionAddon {
      */
     public static JTable getAllSnykIssuesAsTable(Project project) throws RuntimeException {
         SnykProjectIssues allProjectIssue = null;
-        String projectName = project.getName();
-//        log.debug("Project Name: " + projectName);
-        log.debug("Display Action Project Name: " + projectName);
+//        String projectName = project.getName();
+
+        String snykProjectIssuesJsonTxt = getRawProjectIssues(project.getName());
+//        log.debug("Temporary To be removed: snykProjectIssuesJsonTxt----->{}", snykProjectIssuesJsonTxt);
+        if (snykProjectIssuesJsonTxt.equalsIgnoreCase("{\"issues\":[]}")) {
+            throw new NoSnykIssueFoundException("No Snyk Issue Found.");
+        }
+
         SynkoMycinSettings setting = SynkoMycinSettings.getInstance();
-//        try {
         String selectedLlmModelName = setting.getLlmModelComboSelection();
-//        log.debug("What is the selected LLM Model Name: " + selectedLlmModelName);
         String llmModel = selectedLlmModelName.split("~")[0];
-        log.debug("What is the Actual LLM Model Name: " + llmModel);
-        String snykProjectIssuesJsonTxt = getRawProjectIssues(projectName);
+
         String aiInputModelMsg = SnykApi.getSnykProjectIssueInputAIPromt(snykProjectIssuesJsonTxt, llmModel);
 //        log.debug("Input Model: \n" + aiInputModelMsg);
         allProjectIssue = getModifiedAiSnykIssueObject(aiInputModelMsg);
-//        log.debug("All Project Issues: " + allProjectIssue);
-//        } catch (Exception e) {
-//            throw e;
-////            throw new RuntimeException("Unable to get Snyk Issues. Please try after some time.\n if the issue persists, please contact developer");
-//        }
+
         return getUpdatedSnykIssueTable(allProjectIssue);
     }
 
@@ -282,18 +219,15 @@ public class SnykDataActionAddon {
             snykToken = !snykToken.startsWith(Constants.TOKEN_SPACE) ? Constants.TOKEN_SPACE + snykToken : snykToken;
             Map<String, String> snykOrgNameIdMap = setting.getSnykOrgNameIdMap();
             String orgId = snykOrgNameIdMap.get(snykOrgComboSelection);
-//            log.debug("orgId: " + orgId);
+            log.debug("Snyk Project Org Id: " + orgId);
             snykRawResponse = SnykApi.getSnykIssuesAsJsonText(orgId, projectName, snykToken);
+//            log.debug("Snyk Project Raw Response: " + snykRawResponse);
         } catch (Exception e) {
-            throw new RuntimeException("Unable to get response from Snyk. \nPlease recheck the Snyk details.\n If the issue persists, please contact developer");
+            log.error("Exception while getting Raw Snyk Issues : {}\n", e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
         return snykRawResponse;
 
-
-//        return SnykApi.getSnykIssuesAsJsonText(orgId, projectName, snykToken);
-
-//        String snykProjectIssuesJsonTxt = SnykApi.getSnykIssuesAsJsonText(orgId, projectName, snykToken);
-//        return snykProjectIssuesJsonTxt;
     }
 
     /**
@@ -313,19 +247,18 @@ public class SnykDataActionAddon {
         try {
             bearerToken = AgentUtil.getAIBearerToken(clientId, clientSecret, tokenUrl);
         } catch (Exception e) {
-//            log.error("Error while retrieving token for AI for Synk Issues...", e);
+            log.error("Error while retrieving token for AI for Synk Issues...", e);
             throw new RuntimeException("Error while retrieving token from AI, recheck AI input. \nIf the issue persists, please contact developer...");
         }
 
         String aiResponse = null;
         try {
-            String aiApiUrl = setting.getLlmApiEndPointUri();
-//        log.debug("Initial AI API URL: " + aiApiUrl);
-//        aiApiUrl = aiApiUrl.endsWith("/") ? aiApiUrl + "chat/completions" : aiApiUrl + "/chat/completions";
-            aiApiUrl = aiApiUrl.endsWith("/") ? aiApiUrl + Constants.AI_CHAT_COMPLETIONS : aiApiUrl + "/" + Constants.AI_CHAT_COMPLETIONS;
+            String aiApiUrl = AgentUtil.getFormedAIApiUrl(setting.getLlmApiEndPointUri());
             aiResponse = AgentUtil.getOnlyAnswerFromAI(aiApiUrl, bearerToken, aiInputModelMsg);
+//            log.debug("Final Final Modified AI Response: " + aiResponse);
 
         } catch (Exception e) {
+            log.error("UnExpected exception while getting response from AI:\n", e);
             throw new RuntimeException("UnExpected exception while getting response from AI");
         }
 
@@ -333,28 +266,9 @@ public class SnykDataActionAddon {
             ObjectMapper mapper = new ObjectMapper();
             allProjectIssue = mapper.readValue(aiResponse, SnykProjectIssues.class);
         } catch (Exception ex) {
+            log.error("Unable to process the response using Mapper from AI: \n", ex);
             throw new RuntimeException("Unable to process the response from AI,\n Please contact the developer.");
         }
-
-
-//        log.debug("AI Bearer Token: " + bearerToken);
-//        String aiApiUrl = setting.getLlmApiEndPointUri();
-////        log.debug("Initial AI API URL: " + aiApiUrl);
-////        aiApiUrl = aiApiUrl.endsWith("/") ? aiApiUrl + "chat/completions" : aiApiUrl + "/chat/completions";
-//        aiApiUrl = aiApiUrl.endsWith("/") ? aiApiUrl + Constants.AI_CHAT_COMPLETIONS : aiApiUrl + "/" +Constants.AI_CHAT_COMPLETIONS;
-//        log.debug("Final AI API URL: " + aiApiUrl);
-
-//        String aiResponse = null;
-//        try {
-//            aiResponse = AgentUtil.getOnlyAnswerFromAI(aiApiUrl, bearerToken, aiInputModelMsg);
-////            log.debug("Final AI Response: \n" + aiResponse);
-//        } catch (Exception e) {
-//            log.error("Error while asking AI", e);
-//            e.printStackTrace();
-//        }
-//        ObjectMapper mapper = new ObjectMapper();
-//        SnykProjectIssues allProjectIssue = mapper.readValue(aiResponse, SnykProjectIssues.class);
-//        log.debug("All Project Issues: " + allProjectIssue);
 
         return allProjectIssue;
     }
@@ -366,25 +280,34 @@ public class SnykDataActionAddon {
      * @return the updated snyk issue table
      */
     private static JTable getUpdatedSnykIssueTable(SnykProjectIssues allProjectIssue) {
+        JTable table = null;
         AtomicInteger counter = new AtomicInteger(1);
-        List<Object[]> tableData = allProjectIssue.getIssues().stream().map(value -> {
-            Integer index = counter.getAndIncrement();
-            String artifactName = value.getPkgName();
-            String currentVersions = String.join(", ", value.getPkgVersions());
-            String severity = value.getSeverity();
-            boolean isFixable = value.getFixInfo().getIsFixable();
-            String fixedVersions = String.join(", ", value.getFixInfo().getFixedIn());
-            return new Object[]{index, artifactName, severity, isFixable, currentVersions, fixedVersions};
-        }).collect(Collectors.toList());
+        if (allProjectIssue == null) {
+            return null;
+        }
 
-//        String[] columnHeaders = {"#", "Artifact Name", "Current Versions", "Severity", "Fixable", "Fixed Versions"};
-        String[] columnHeaders = {Constants.HASH, Constants.ARTIFACT_NAME, Constants.SEVERITY, Constants.FIXABLE, Constants.CURRENT_VERSIONS, Constants.FIXED_VERSIONS};
-        Object[][] rows = tableData.toArray(new Object[0][]);
+        if (allProjectIssue.getIssues() != null || allProjectIssue.getIssues().isEmpty()) {
+            List<Object[]> tableData = allProjectIssue.getIssues().stream().map(value -> {
+                Integer index = counter.getAndIncrement();
+                String artifactName = value.getPkgName();
+                String currentVersions = String.join(", ", value.getPkgVersions());
+                String severity = value.getSeverity();
+                boolean isFixable = value.getFixInfo().getIsFixable();
+                String fixedVersions = String.join(", ", value.getFixInfo().getFixedIn());
+                return new Object[]{index, artifactName, severity, isFixable, currentVersions, fixedVersions};
+            }).collect(Collectors.toList());
 
-        DefaultTableModel model = new DefaultTableModel(rows, columnHeaders);
-        JTable table = new JBTable(model);
+            String[] columnHeaders = {Constants.HASH, Constants.ARTIFACT_NAME, Constants.SEVERITY, Constants.FIXABLE, Constants.CURRENT_VERSIONS, Constants.FIXED_VERSIONS};
+            Object[][] rows = tableData.toArray(new Object[0][]);
 
-        reSizeTable(table);
+            DefaultTableModel model = new DefaultTableModel(rows, columnHeaders);
+            table = new JBTable(model);
+
+            // Enable Sorting also
+            table.setAutoCreateRowSorter(true);
+
+            reSizeTable(table);
+        }
 
         return table;
     }
@@ -415,7 +338,7 @@ public class SnykDataActionAddon {
     public static String getAIInputPrompt(PsiFile file, String projectIssuesAsJsonText) {
         String buildFileName = file.getName();
         String buildFileText = file.getFileDocument().getText();
-        String initialPrompt = CommonUtil.getProperty("snyk.fix.input.prompt");
+        String initialPrompt = CommonUtil.getProperty(Constants.SNYK_FIX_INPUT_PROMPT);
         String smallJsonPromtText = initialPrompt.replaceAll("\\{buildFileName\\}", buildFileName);
         smallJsonPromtText = smallJsonPromtText.replaceAll("\\{innerJson\\}", projectIssuesAsJsonText);
         smallJsonPromtText = smallJsonPromtText.replaceAll("\\{buildContents\\}", Matcher.quoteReplacement(buildFileText));
@@ -435,10 +358,10 @@ public class SnykDataActionAddon {
         String bearerToken = AgentUtil.getAIBearerToken(clientId, clientSecret, tokenUrl);
 
         String aiInputPromptMsg = SnykDataActionAddon.getAIInputPrompt(psiFile, projectIssuesAsJsonText);
-        log.debug("Final Generated AI Input Prompt Text: " + aiInputPromptMsg);
+//        log.debug("Final Generated AI Input Prompt Text: " + aiInputPromptMsg);
 
         String aiInputModelMsg = AgentUtil.getFormedPrompt(aiInputPromptMsg, llmModel);
-        log.debug("Final AI Input Final Prompt: " + aiInputModelMsg);
+//        log.debug("Final AI Input Final Prompt: " + aiInputModelMsg);
 
         String aiApiUrl = AgentUtil.getFormedAIApiUrl(setting.getLlmApiEndPointUri());
         String aiResponse = AgentUtil.getOnlyAnswerFromAI(aiApiUrl, bearerToken, aiInputModelMsg);

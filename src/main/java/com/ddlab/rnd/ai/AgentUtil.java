@@ -71,7 +71,7 @@ public class AgentUtil {
                 .POST(HttpRequest.BodyPublishers.ofString(Constants.CLIENT_CREDENTIALS)).build();
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            log.debug("What is the Response Code for getting AI access token: " + response.statusCode());
+//            log.debug("What is the Response Code for getting AI access token: " + response.statusCode());
             if (response.statusCode() != 200) {
                 throw new InvalidTokenException("Unable to receive the token. Please check client id, client secret and token uri.");
             }
@@ -100,7 +100,7 @@ public class AgentUtil {
      */
     public static List<String> getAllLLMModels(String bearerToken, String aiAPIUrl) throws RuntimeException {
         List<String> llmModelList = null;
-        aiAPIUrl = aiAPIUrl + "/models";
+        aiAPIUrl = aiAPIUrl + Constants.MODEL_PATH;
         HttpResponse<String> response;
         HttpClient client = HttpClient.newHttpClient();
         LLmModel model = null;
@@ -111,7 +111,7 @@ public class AgentUtil {
                     .GET().build();
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
             String responseBody = response.body();
-            log.debug("Model Response Body: " + responseBody);
+//            log.debug("Model Response Body: " + responseBody);
             ObjectMapper objectMapper = new ObjectMapper();
             model = objectMapper.readValue(responseBody, LLmModel.class);
             llmModelList = model.getData().stream()
@@ -121,12 +121,11 @@ public class AgentUtil {
                         String maxModelLength = data.getMaxModelLength();
                         return modelName + "~" + modelType + "~" + maxModelLength;
                     }).collect(Collectors.toList());
-            log.debug("Model List: " + llmModelList);
+//            log.debug("Model List: " + llmModelList);
         } catch (Exception e) {
             log.error("Error while getting models", e);
             throw new RuntimeException("UnExpected Error while fetching the LLM models. \nPlease contact the developer.");
         }
-
 
         return llmModelList;
     }
@@ -140,11 +139,8 @@ public class AgentUtil {
      * @return the string
      * @throws Exception the exception
      */
+    @Deprecated
     public static String askAI(String aiAPIUrl, String bearerToken, String promptString) throws Exception {
-//        log.debug("aiAPIUrl: " + aiAPIUrl);
-//        log.debug("bearerToken: " + bearerToken);
-//        log.debug("promptString: " + promptString);
-
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(aiAPIUrl)) // Target URI
                 .header(Constants.CONTENT_TYPE, Constants.JSON_TYPE).header(Constants.AUTHORIZATION, bearerToken)
@@ -152,7 +148,8 @@ public class AgentUtil {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         String responseBody = response.body();
-        System.out.println("Response Body: " + responseBody);
+
+        //TODO: Handle Response code
 
         responseBody = getActualAIAnswer(responseBody);
         return responseBody;
@@ -216,7 +213,6 @@ public class AgentUtil {
      * @return the formed prompt
      */
     public static String getFormedPrompt(String inputText, String modelName) {
-
         PromptMessageModel promptMessageModel = new PromptMessageModel();
         promptMessageModel.setRole(Constants.USER);
         promptMessageModel.setContent(inputText);
@@ -226,7 +222,7 @@ public class AgentUtil {
 
         ObjectMapper mapper = new ObjectMapper();
         String aiInputModelMsg = mapper.writeValueAsString(aiPromptModel);
-        log.debug("JSON: \n" + aiInputModelMsg);
+//        log.debug("JSON: \n" + aiInputModelMsg);
         return aiInputModelMsg;
     }
 

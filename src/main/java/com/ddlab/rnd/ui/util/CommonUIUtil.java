@@ -45,10 +45,6 @@ public class CommonUIUtil {
                 .notify(projects[0]);
     }
 
-    public static void validateSnykInputsFromSetting() {
-
-    }
-
     public static void validateAiInputsFromSetting() {
         SynkoMycinSettings setting = SynkoMycinSettings.getInstance();
         String clientId = setting.getClientIdStr();
@@ -89,14 +85,20 @@ public class CommonUIUtil {
 
     public static void createBackFile(Project project, String buildFileName) {
         Date date = new Date();
-//        String dateFormat = "dd-MM-yyyy-HH-mm-ss";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Constants.DATE_FMT);
-        String formattedDate = simpleDateFormat.format(date);
+        createBackupAndCopy(project, buildFileName);
 
+        // Refresh the project
+        VirtualFile baseDir = project.getBaseDir();
+        if (baseDir != null) {
+            baseDir.refresh(true, true); // recursive refresh
+        }
+    }
+
+    private static void createBackupAndCopy(Project project, String buildFileName) {
+        String formattedDate = new SimpleDateFormat(Constants.DATE_FMT).format(new Date());
         String projectBasePath = project.getBasePath();
-//        log.debug("Project Base Path: " + projectBasePath);
-
-        File backupDir = new File(projectBasePath + "/Backup");
+        File backupDir = new File(projectBasePath + File.separator + Constants.BACKUP_DIR);
         if (!backupDir.exists()) {
             backupDir.mkdirs();
         }
@@ -108,12 +110,6 @@ public class CommonUIUtil {
             Files.copy(srcBasePath, backDestnFilePath);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
-        }
-
-        // Refresh the project
-        VirtualFile baseDir = project.getBaseDir();
-        if (baseDir != null) {
-            baseDir.refresh(true, true); // recursive refresh
         }
     }
 
