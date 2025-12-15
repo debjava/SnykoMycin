@@ -26,8 +26,8 @@ public class Constants {
     public static final String CLIENT_CREDENTIALS = "grant_type=client_credentials";
 
     public static final String USER = "user";
-    public static final String ERR_TITLE = "SnykoMycin Error";
-    public static final String SNYKO_TITLE = "SnykMycin Success Title";
+    public static final String ERR_TITLE = "Snykomycin";
+    public static final String SNYKO_TITLE = "Snykomycin";
 
     public static final String DEFAULT_SNYK_URI = "https://snyk.io/api/v1";
 
@@ -46,4 +46,10 @@ public class Constants {
     public static final String SNYK_FIX_INPUT_PROMPT = "snyk.fix.input.prompt";
     public static final String SAST = "sast";
     public static final String MODEL_PATH = "/models";
+    public static final String NO_SNYK_ISSUES_FOUND = "No Issues Found in Snyk, All Good.";
+    public static final String NO_SNYK_PROJECT_FOUND_MSG = "No project found in Snyk.";
+    public static final String NO_FIXABLE_SNYK_ISSUE_MSG = """
+                        While Snyk reported some issues, \nthey are classified as not fixable at this time.""";
+    public static final String NO_PROJECT_CONFIGURATION_BUILD_TYPE = """
+                        No project configured for build type in Snyk.\nPlease check in Snyk System.""";
 }

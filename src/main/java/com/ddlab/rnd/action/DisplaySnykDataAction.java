@@ -19,6 +19,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
@@ -28,61 +29,86 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.util.List;
 
 /**
  * The Class DisplaySnykDataAction.
+ *
  * @author Debadatta Mishra
  */
 @Slf4j
 public class DisplaySnykDataAction extends AnAction {
 
-	private final List<String> applicableFileTypes = List.of("pom.xml", "build.gradle", "package.json");
-
-	/**
-	 * Action performed.
-	 *
-	 * @param ae the ae
-	 */
-	@Override
-	public void actionPerformed(@NotNull AnActionEvent ae) {
-		Project project = ae.getProject();
-		if (project == null)
-			return;
+    /**
+     * Action performed.
+     *
+     * @param ae the ae
+     */
+    @Override
+    public void actionPerformed(@NotNull AnActionEvent ae) {
+        log.debug("************** START - TRACKING DATA FOR ANALYSIS **************");
+        Project project = ae.getProject();
+        Editor editor = ae.getData(CommonDataKeys.EDITOR);
+        String editorFileTypeName = editor.getVirtualFile().getName();
+        if (project == null)
+            return;
         try {
-			log.debug("Display Action Project Name: " + project.getName());
+            log.debug("Action Type: {}, Project Name: {}", "Display", project.getName());
+            log.debug("Editor File Name: {}", editorFileTypeName);
+
             CommonUIUtil.validateAiInputsFromSetting();
-//            JTable table = SnykDataActionAddon.getSnykIssuesProgressively(project);
 
-			JTable table = SnykDataActionAddon.getProgressiveSnykIssues(project);
-
-
-			if(table != null && table.getRowCount() >= 0) {
-				ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(Constants.SNYK_ISSUES);
-				Content content = toolWindow.getContentManager().getContent(0);
-				JComponent component = content.getComponent();
-				if(component instanceof JScrollPane scrollPane) {
-					scrollPane.setViewportView(table);
-				}
-				toolWindow.show();
-			}
-
-        }
-		catch (Exception e) {
+//			runAllInForegroundMode(project, editorFileTypeName); //Working fine
+			runAllInBackgroundMode(project, editorFileTypeName); //Working fine
+        } catch (Exception e) {
             log.error("Exception for DisplaySnykDataAction: {}", e.getMessage());
         }
-	}
+        log.debug("************** END - TRACKING DATA FOR ANALYSIS **************\n");
+    }
 
-	@Override
-	public void update(AnActionEvent e) {
-		Editor editor = e.getData(CommonDataKeys.EDITOR);
-		String fileName = editor.getVirtualFile().getName();
-		boolean isApplicableFileType = applicableFileTypes.contains(fileName);
-		e.getPresentation().setEnabled(isApplicableFileType);
-	}
+    @Override
+    public void update(AnActionEvent e) {
+        Editor editor = e.getData(CommonDataKeys.EDITOR);
+        String fileName = editor.getVirtualFile().getName();
+        boolean isApplicableFileType = Constants.APPLICABLE_FILE_TYPES.contains(fileName);
+        e.getPresentation().setEnabled(isApplicableFileType);
+    }
 
-	@Override
-	public @NotNull ActionUpdateThread getActionUpdateThread() {
-		return ActionUpdateThread.EDT; // UI-safe
-	}
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.EDT; // UI-safe
+    }
+
+    // ~~~~~~~~~ Private methods below ~~~~~~~~~~~
+    private void runAllInBackgroundMode(Project project, String editorFileTypeName) {
+        SnykDataActionAddon.getProgressiveSnykIssuesInBackground11(project, editorFileTypeName).thenAccept(result -> {
+            ApplicationManager.getApplication().invokeLater(() -> {
+                showData(project, result);
+            });
+        });
+    }
+
+    private void runAllInForegroundMode(Project project, String editorFileTypeName) {
+        JTable table = SnykDataActionAddon.getProgressiveSnykIssues11(project,editorFileTypeName); // Correct
+        if(table != null && table.getRowCount() >= 0) {
+            ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(Constants.SNYK_ISSUES);
+            Content content = toolWindow.getContentManager().getContent(0);
+            JComponent component = content.getComponent();
+            if(component instanceof JScrollPane scrollPane) {
+                scrollPane.setViewportView(table);
+            }
+            toolWindow.show();
+        }
+    }
+
+    private void showData(Project project, JTable table) {
+        if (table != null && table.getRowCount() >= 0) {
+            ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(Constants.SNYK_ISSUES);
+            Content content = toolWindow.getContentManager().getContent(0);
+            JComponent component = content.getComponent();
+            if (component instanceof JScrollPane scrollPane) {
+                scrollPane.setViewportView(table);
+            }
+            toolWindow.show();
+        }
+    }
 }

@@ -18,4 +18,10 @@ public class ProjectIdAttributes {
 	@JsonProperty("type")
 	private String type;
 
+	@JsonProperty("url")
+	private String url;
+
+	@JsonProperty("display_name")
+	private String displayName;
+
 }

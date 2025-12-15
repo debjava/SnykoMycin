@@ -147,12 +147,12 @@ public class SnykDetailsPanel extends JPanel {
     }
 
     private void populateSnykOrgNamesProgressively() throws RuntimeException {
-        ProgressManager.getInstance().run(new Task.Modal(null, "Fetching LLM Models ...", true) {
+        ProgressManager.getInstance().run(new Task.Modal(null, Constants.SNYKOMYCIN_PROGRESS_TITLE, true) {
             @Override
             public void run(ProgressIndicator indicator) {
                 try {
                     indicator.setIndeterminate(true);
-                    indicator.setText("Please wait, fetching LLM Models ...");
+                    indicator.setText("Please wait, fetching Snyk Org Names ...");
                     populateOrgNames();
                 } catch (Exception ex) {
                     CommonUIUtil.showAppErrorMessage(ex.getMessage());
@@ -184,7 +184,7 @@ public class SnykDetailsPanel extends JPanel {
             snykOrgGroupNames = SnykUiUtil.getSnykOrgGroupNames(snykUri, snykToken);
             // Manipulate snyk org and group names and store in Map with group name as key and id as value
             snykOrgGroupNames.stream().map(s -> s.split("~")).forEach(s -> snykOrgNameIdMap.put(s[1] + "~" + s[2], s[0]));
-            log.debug("While populating snykOrgNameIdMap: " + snykOrgNameIdMap);
+//            log.debug("While populating snykOrgNameIdMap: " + snykOrgNameIdMap);
             snykOrgNameIdMap.forEach((k, v) -> {
                 orgNameComboBox.addItem(k);
             });

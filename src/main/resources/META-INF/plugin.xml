@@ -41,11 +41,11 @@
 
     </extensions>
     <actions>
-        <group id="SynkoMycinPlugin.SubMenu" text="SnykoMycin"
+        <group id="SynkoMycinPlugin.SubMenu" text="SnykoMycin" class ="com.ddlab.rnd.action.GroupMenuControlAction"
                popup="true" icon="/icons/double-arrow-16.png">
             <action id="SnykoMycin.DisplaySnykAction"
                     class="com.ddlab.rnd.action.DisplaySnykDataAction"
-                    text="Show Snyk Data Action"
+                    text="Show Snyk Issues"
                     icon="/icons/snyk-1-16.png"/>
             <action id="SnykoMycin.UpdateBuildAction"
                     class="com.ddlab.rnd.action.UpdateBuildAction"

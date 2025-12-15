@@ -14,6 +14,9 @@ package com.ddlab.rnd.action;
 
 import com.ddlab.rnd.action.addon.SnykDataActionAddon;
 import com.ddlab.rnd.common.util.Constants;
+import com.ddlab.rnd.exception.NoFixableSnykIssueFoundException;
+import com.ddlab.rnd.exception.NoSnykIssueFoundException;
+import com.ddlab.rnd.exception.NoSuchSnykProjectFoundException;
 import com.ddlab.rnd.ui.util.CommonUIUtil;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -43,12 +46,16 @@ public class UpdateBuildAction extends AnAction {
      */
     @Override
     public void actionPerformed(AnActionEvent e) {
+        log.debug("************** START - TRACKING DATA FOR ANALYSIS **************");
         Project project = e.getProject();
         if (project == null)
             return;
+
+        log.debug("Action Type: {},  Project Name: {}", "Update", project.getName());
         PsiFile psiFile = e.getData(CommonDataKeys.PSI_FILE);
         CommonUIUtil.validateAiInputsFromSetting();
         performOperationProgressively(psiFile, project);
+        log.debug("************** END - TRACKING DATA FOR ANALYSIS **************\n");
     }
 
     /**
@@ -100,7 +107,19 @@ public class UpdateBuildAction extends AnAction {
                     indicator.setText("Finishing all ...");
                     CommonUIUtil.updateBuildFileContents(psiFile, project,aiResponse);
                     CommonUIUtil.showAppSuccessfulMessage(Constants.UPDATE_BUILD_SUCCESS_MSG);
-                } catch (Exception ex) {
+                } catch(NoSuchSnykProjectFoundException nspe) {
+                    log.debug("No project found in Snyk");
+                    CommonUIUtil.showAppErrorMessage(Constants.NO_SNYK_PROJECT_FOUND_MSG);
+                }
+                catch (NoSnykIssueFoundException ex) {
+                    log.debug("No issues found in Snyk");
+                    CommonUIUtil.showAppSuccessfulMessage(Constants.NO_SNYK_ISSUES_FOUND);
+                }
+                catch(NoFixableSnykIssueFoundException nfse) {
+                    log.debug("No fixable issues found in Snyk");
+                    CommonUIUtil.showAppSuccessfulMessage(Constants.NO_FIXABLE_SNYK_ISSUE_MSG);
+                }
+                catch (Exception ex) {
                     log.error("Error Messages to get Snyk Issues: {}", ex.getMessage());
                     CommonUIUtil.showAppErrorMessage(ex.getMessage());
                 }

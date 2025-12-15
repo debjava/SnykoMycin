@@ -23,14 +23,14 @@ public class BasicUiUtil {
 //    }
 
     public static List<String> getActualLLMModels(String clientId, String clientSecret, String tokenUrl, String aiApriEndPointUrl) throws InvalidTokenException {
-        log.debug("Client Id: " + clientId);
-        log.debug("Client Secret: " + clientSecret);
+//        log.debug("Client Id: " + clientId);
+//        log.debug("Client Secret: " + clientSecret);
         List<String> comboItems = List.of();
 
         // First get the bearer token
         try {
             String bearerToken = AgentUtil.getAIBearerToken(clientId, clientSecret, tokenUrl);
-            log.debug("Bearer Token: " + bearerToken);
+//            log.debug("Bearer Token: " + bearerToken);
 
             if(bearerToken == null) {
                 throw new InvalidTokenException("Bearer token is null, please re-check client Id, client secret, token url ");
@@ -116,7 +116,7 @@ public class BasicUiUtil {
         }
 
 //        Map<String, String> snykOrgNameIdMap = snykPanel.getSnykOrgNameIdMap();
-        log.debug("While saving snykOrgNameIdMap: " + settings.getSnykOrgNameIdMap());
+//        log.debug("While saving snykOrgNameIdMap: " + settings.getSnykOrgNameIdMap());
 
 //        settings.setSnykOrgNameIdMap(snykPanel.getSnykOrgNameIdMap());
     }

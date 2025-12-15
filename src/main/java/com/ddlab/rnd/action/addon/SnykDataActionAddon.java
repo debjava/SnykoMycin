@@ -16,7 +16,10 @@ import com.ddlab.rnd.ai.AgentUtil;
 import com.ddlab.rnd.ai.input.model.SnykFixInputModel;
 import com.ddlab.rnd.common.util.CommonUtil;
 import com.ddlab.rnd.common.util.Constants;
+import com.ddlab.rnd.exception.NoFixableSnykIssueFoundException;
+import com.ddlab.rnd.exception.NoProjectConfiguredException;
 import com.ddlab.rnd.exception.NoSnykIssueFoundException;
+import com.ddlab.rnd.exception.NoSuchSnykProjectFoundException;
 import com.ddlab.rnd.setting.SynkoMycinSettings;
 import com.ddlab.rnd.snyk.ai.out.model.SnykProjectIssues;
 import com.ddlab.rnd.snyk.api.SnykApi;
@@ -40,6 +43,8 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
@@ -52,6 +57,90 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SnykDataActionAddon {
 
+
+    public static CompletableFuture<JTable> getProgressiveSnykIssuesInBackground11(Project project, String buildTypeName) {
+        CompletableFuture<JTable> future = new CompletableFuture<>();
+
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, Constants.SNYKOMYCIN_PROGRESS_TITLE, true) {
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                try {
+                    indicator.setIndeterminate(true);
+                    indicator.setText(Constants.SNYK_ISSUES_PROGRESS_MSG);
+                    String snykProjectIssuesJsonTxt =  getRawSnykProjectIssuesAsText11(project, buildTypeName);
+                    indicator.setText("Analyzing and Consolidating Issues ...");
+                    SnykProjectIssues allProjectIssue = getAIManipulatedSnykIssues(snykProjectIssuesJsonTxt);
+                    JTable table = getUpdatedSnykIssueTable(allProjectIssue);
+                    indicator.setText("Finishing all ...");
+
+                    future.complete(table);
+                }
+                catch(NoSuchSnykProjectFoundException nsfe) {
+                    log.error("No such project found in Snyk");
+                    CommonUIUtil.showAppErrorMessage(Constants.NO_SNYK_PROJECT_FOUND_MSG);
+                }
+                catch(NoProjectConfiguredException npce) {
+                    CommonUIUtil.showAppErrorMessage(Constants.NO_PROJECT_CONFIGURATION_BUILD_TYPE);
+                }
+                catch (NoSnykIssueFoundException ex) {
+                    log.debug("No issues found in Snyk");
+                    CommonUIUtil.showAppSuccessfulMessage(Constants.NO_SNYK_ISSUES_FOUND);
+                } catch (Exception ex) {
+                    log.error("Error Messages to get Snyk Issues: {}", ex.getMessage());
+                    CommonUIUtil.showAppErrorMessage(ex.getMessage());
+                }
+            }
+
+            @Override
+            public void onCancel() {
+                future.completeExceptionally(new CancellationException("Task cancelled"));
+            }
+        });
+
+        return future;
+    }
+
+    public static JTable getProgressiveSnykIssues11(Project project, String buildTypeName) {
+        final JTable[] table = new JTable[1];
+//        ProgressManager.getInstance().run(new Task.Backgroundable(project, Constants.SNYKOMYCIN_PROGRESS_TITLE, true) {
+        ProgressManager.getInstance().run(new Task.Modal(null, Constants.SNYKOMYCIN_PROGRESS_TITLE, true) {
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                try {
+                    indicator.setIndeterminate(true);
+                    indicator.setText(Constants.SNYK_ISSUES_PROGRESS_MSG);
+                    String snykProjectIssuesJsonTxt =  getRawSnykProjectIssuesAsText11(project, buildTypeName);
+                    indicator.setText("Analyzing and Consolidating Issues ...");
+                    SnykProjectIssues allProjectIssue = getAIManipulatedSnykIssues(snykProjectIssuesJsonTxt);
+                    table[0] = getUpdatedSnykIssueTable(allProjectIssue);
+                    indicator.setText("Finishing all ...");
+                } catch(NoSuchSnykProjectFoundException nsfe) {
+                    log.error("No such project found in Snyk");
+                    CommonUIUtil.showAppErrorMessage(Constants.NO_SNYK_PROJECT_FOUND_MSG);
+                }
+                catch(NoProjectConfiguredException npce) {
+                    CommonUIUtil.showAppErrorMessage(Constants.NO_PROJECT_CONFIGURATION_BUILD_TYPE);
+                }
+                catch (NoSnykIssueFoundException ex) {
+                    log.debug("No issues found in Snyk");
+                    CommonUIUtil.showAppSuccessfulMessage(Constants.NO_SNYK_ISSUES_FOUND);
+                } catch (Exception ex) {
+                    log.error("Error Messages to get Snyk Issues: {}", ex.getMessage());
+                    CommonUIUtil.showAppErrorMessage(ex.getMessage());
+                }
+            }
+
+            @Override
+            public void onSuccess() {
+                // Runs on UI thread after completion
+//                Messages.showInfoMessage("Task finished successfully!", "Done");
+            }
+
+        });
+        return table[0];
+    }
+
+    @Deprecated
     public static JTable getProgressiveSnykIssues(Project project) {
         final JTable[] table = new JTable[1];
 //        ProgressManager.getInstance().run(new Task.Backgroundable(null, Constants.SNYKOMYCIN_PROGRESS_TITLE, true) {
@@ -68,7 +157,7 @@ public class SnykDataActionAddon {
                     indicator.setText("Finishing all ...");
                 } catch (NoSnykIssueFoundException ex) {
                     log.debug("No issues found in Snyk");
-                    CommonUIUtil.showAppSuccessfulMessage("No Snyk Issues Found");
+                    CommonUIUtil.showAppSuccessfulMessage(Constants.NO_SNYK_ISSUES_FOUND);
                 } catch (Exception ex) {
                     log.error("Error Messages to get Snyk Issues: {}", ex.getMessage());
                     CommonUIUtil.showAppErrorMessage(ex.getMessage());
@@ -114,20 +203,31 @@ public class SnykDataActionAddon {
 
     public static SnykProjectIssues getAllSnykIssues(Project project) throws RuntimeException {
         SnykProjectIssues allProjectIssue = null;
-        String projectName = project.getName();
-//        log.debug("Display Action Project Name: " + projectName);
+        String snykProjectIssuesJsonTxt = getRawSnykProjectIssuesAsText(project);
+
         SynkoMycinSettings setting = SynkoMycinSettings.getInstance();
         String selectedLlmModelName = setting.getLlmModelComboSelection();
         String llmModel = selectedLlmModelName.split("~")[0];
         log.debug("Selected Actual LLM Model Name ?: " + llmModel);
-        String snykProjectIssuesJsonTxt = getRawProjectIssues(projectName);
+
         String aiInputModelMsg = SnykApi.getSnykProjectIssueInputAIPromt(snykProjectIssuesJsonTxt, llmModel);
         allProjectIssue = getModifiedAiSnykIssueObject(aiInputModelMsg);
         return allProjectIssue;
     }
 
-    public static String getFixableSnykIssuesAsJsonText(Project project) {
+    public static String getFixableSnykIssuesAsJsonText(Project project) throws RuntimeException {
         SnykProjectIssues allProjectIssue = getAllSnykIssues(project);
+
+//        List<SnykFixInputModel> fixModelList = allProjectIssue.getIssues().stream()
+//                .filter(value -> !value.getFixInfo().getFixedIn().isEmpty())
+//                .map(value -> {
+//            SnykFixInputModel fixModel = new SnykFixInputModel();
+//            fixModel.setArtifactName(value.getPkgName());
+//            fixModel.setFixedVersions(value.getFixInfo().getFixedIn());
+//
+//            return fixModel;
+//        }).collect(Collectors.toList());
+
         List<SnykFixInputModel> fixModelList = allProjectIssue.getIssues().stream().filter(value -> value.getFixInfo().getIsFixable()).map(value -> {
             SnykFixInputModel fixModel = new SnykFixInputModel();
             fixModel.setArtifactName(value.getPkgName());
@@ -135,6 +235,12 @@ public class SnykDataActionAddon {
 
             return fixModel;
         }).collect(Collectors.toList());
+
+        if(fixModelList.isEmpty()) {
+            log.debug("No Fixable Issues Found.");
+            throw new NoFixableSnykIssueFoundException("No Fixable Issues Found.");
+
+        }
 
         String jsonText = getJsonContentAsText(fixModelList);
 //        log.debug("Final Input JSON: " + jsonText);
@@ -150,11 +256,20 @@ public class SnykDataActionAddon {
     }
 
 
+    public static String getRawSnykProjectIssuesAsText11(Project project, String buildFileTypeName) throws RuntimeException {
+        String snykProjectIssuesJsonTxt = getRawProjectIssues11(project.getName(), buildFileTypeName);
+        log.debug("Temporary To be removed: snykProjectIssuesJsonTxt----->{}", snykProjectIssuesJsonTxt);
+        if (snykProjectIssuesJsonTxt.equalsIgnoreCase("{\"issues\":[]}")) {
+            throw new NoSnykIssueFoundException("No Snyk Issue Found.");
+        }
+        return snykProjectIssuesJsonTxt;
+    }
 
     // 1............
+    @Deprecated
     public static String getRawSnykProjectIssuesAsText(Project project) throws RuntimeException {
         String snykProjectIssuesJsonTxt = getRawProjectIssues(project.getName());
-//        log.debug("Temporary To be removed: snykProjectIssuesJsonTxt----->{}", snykProjectIssuesJsonTxt);
+        log.debug("Temporary To be removed: snykProjectIssuesJsonTxt----->{}", snykProjectIssuesJsonTxt);
         if (snykProjectIssuesJsonTxt.equalsIgnoreCase("{\"issues\":[]}")) {
             throw new NoSnykIssueFoundException("No Snyk Issue Found.");
         }
@@ -187,7 +302,6 @@ public class SnykDataActionAddon {
 //        String projectName = project.getName();
 
         String snykProjectIssuesJsonTxt = getRawProjectIssues(project.getName());
-//        log.debug("Temporary To be removed: snykProjectIssuesJsonTxt----->{}", snykProjectIssuesJsonTxt);
         if (snykProjectIssuesJsonTxt.equalsIgnoreCase("{\"issues\":[]}")) {
             throw new NoSnykIssueFoundException("No Snyk Issue Found.");
         }
@@ -203,12 +317,38 @@ public class SnykDataActionAddon {
         return getUpdatedSnykIssueTable(allProjectIssue);
     }
 
+    private static String getRawProjectIssues11(String projectName, String buildFileTypeName) throws RuntimeException {
+        SynkoMycinSettings setting = SynkoMycinSettings.getInstance();
+        String snykOrgComboSelection = setting.getSnykOrgComboSelection();
+        String snykToken = setting.getSnykTokenTxt();
+        String snykRawResponse = null;
+
+        try {
+            snykToken = !snykToken.startsWith(Constants.TOKEN_SPACE) ? Constants.TOKEN_SPACE + snykToken : snykToken;
+            Map<String, String> snykOrgNameIdMap = setting.getSnykOrgNameIdMap();
+            String orgId = snykOrgNameIdMap.get(snykOrgComboSelection);
+            log.debug("Snyk Project Org Id: " + orgId);
+//            snykRawResponse = SnykApi.getSnykIssuesAsJsonText(orgId, projectName, snykToken);
+            snykRawResponse = SnykApi.getSnykIssuesAsJsonText11(projectName, buildFileTypeName, orgId, snykToken);
+            log.debug("getRawProjectIssues Snyk Project Raw Response: " + snykRawResponse);
+        } catch(NoSuchSnykProjectFoundException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            log.error("Exception while getting Raw Snyk Issues : {}\n", e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        }
+        return snykRawResponse;
+
+    }
+
     /**
      * Gets the raw project issues.
      *
      * @param projectName the project name
      * @return the raw project issues
      */
+    @Deprecated
     private static String getRawProjectIssues(String projectName) throws RuntimeException {
         SynkoMycinSettings setting = SynkoMycinSettings.getInstance();
         String snykOrgComboSelection = setting.getSnykOrgComboSelection();
@@ -221,7 +361,7 @@ public class SnykDataActionAddon {
             String orgId = snykOrgNameIdMap.get(snykOrgComboSelection);
             log.debug("Snyk Project Org Id: " + orgId);
             snykRawResponse = SnykApi.getSnykIssuesAsJsonText(orgId, projectName, snykToken);
-//            log.debug("Snyk Project Raw Response: " + snykRawResponse);
+            log.debug("getRawProjectIssues Snyk Project Raw Response: " + snykRawResponse);
         } catch (Exception e) {
             log.error("Exception while getting Raw Snyk Issues : {}\n", e.getMessage());
             throw new RuntimeException(e.getMessage());

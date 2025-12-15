@@ -6,12 +6,17 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 @Slf4j
 public class CommonUtil {
 
     private static Properties properties = null;
+
+    public final static Map<String,String> BUILDTYPEMAP = Map.of("pom.xml", "maven",
+            "build.gradle", "gradle", "build.gradle.kts", "kotlin", "package.json", "npm");
 
     public static String getResourceContentAsText(String filePath) {
         String fileContent = null;
