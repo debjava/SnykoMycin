@@ -1,11 +1,9 @@
 package com.ddlab.rnd.ai.input.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.util.List;
+
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter @Setter //@AllArgsConstructor @NoArgsConstructor
 public class SnykFixInputModel {

@@ -1,12 +1,14 @@
 package com.ddlab.rnd.setting;
 
-import com.ddlab.rnd.setting.ui.SnykoMycinSettingComponent;
-import com.ddlab.rnd.ui.util.BasicUiUtil;
-import com.intellij.openapi.options.Configurable;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
+import com.ddlab.rnd.setting.ui.SnykoMycinSettingComponent;
+import com.ddlab.rnd.ui.util.BasicUiUtil;
+import com.intellij.openapi.options.Configurable;
 
 public class SnykoMycinPluginConfigurable implements Configurable {
 

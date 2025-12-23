@@ -1,15 +1,17 @@
 package com.ddlab.rnd.setting;
 
+import java.util.Map;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import com.ddlab.rnd.common.util.Constants;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.Map;
 
 @State(
         name = "SnykoMycinSettings",

@@ -1,18 +1,22 @@
 package com.ddlab.rnd.ui.util;
 
 
-import com.ddlab.rnd.ai.AgentUtil;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.ComboBoxModel;
+import javax.swing.JComboBox;
+
+//import com.ddlab.rnd.ai.AgentUtil;
+import com.ddlab.rnd.ai.AIAssistant;
 import com.ddlab.rnd.common.util.Constants;
 import com.ddlab.rnd.exception.InvalidTokenException;
 import com.ddlab.rnd.setting.SynkoMycinSettings;
 import com.ddlab.rnd.setting.ui.SnykoMycinSettingComponent;
 import com.ddlab.rnd.ui.panel.AiDetailsPanel;
 import com.ddlab.rnd.ui.panel.SnykDetailsPanel;
-import lombok.extern.slf4j.Slf4j;
 
-import javax.swing.*;
-import java.util.ArrayList;
-import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class BasicUiUtil {
@@ -29,13 +33,18 @@ public class BasicUiUtil {
 
         // First get the bearer token
         try {
-            String bearerToken = AgentUtil.getAIBearerToken(clientId, clientSecret, tokenUrl);
+            AIAssistant aiAssistant = new AIAssistant(clientId, clientSecret, tokenUrl);
+            String bearerToken = aiAssistant.getBearerToken();
+
+//            String bearerToken = AgentUtil.getAIBearerToken(clientId, clientSecret, tokenUrl);
 //            log.debug("Bearer Token: " + bearerToken);
 
             if(bearerToken == null) {
                 throw new InvalidTokenException("Bearer token is null, please re-check client Id, client secret, token url ");
             }
-            comboItems = AgentUtil.getAllLLMModels(bearerToken, aiApriEndPointUrl);
+//            comboItems = AgentUtil.getAllLLMModels(bearerToken, aiApriEndPointUrl);
+
+            comboItems = aiAssistant.getAllLLMModels(bearerToken, aiApriEndPointUrl);
 
 
 //            if (bearerToken == null) {

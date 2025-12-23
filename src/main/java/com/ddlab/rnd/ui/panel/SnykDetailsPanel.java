@@ -1,5 +1,20 @@
 package com.ddlab.rnd.ui.panel;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
+
 import com.ddlab.rnd.common.util.Constants;
 import com.ddlab.rnd.ui.util.CommonUIUtil;
 import com.ddlab.rnd.ui.util.SnykUiUtil;
@@ -7,17 +22,10 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.ui.Messages;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.swing.*;
-import javax.swing.border.TitledBorder;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @Getter
@@ -46,7 +54,6 @@ public class SnykDetailsPanel extends JPanel {
         createOrgNameComboBox();
 
         createSnykOrgButton();
-
     }
 
     // ~~~~~~~~~~~~~~~~~~~~ UI Specific private methods ~~~~~~~~~~~~~~~~~~~~
@@ -147,7 +154,7 @@ public class SnykDetailsPanel extends JPanel {
     }
 
     private void populateSnykOrgNamesProgressively() throws RuntimeException {
-        ProgressManager.getInstance().run(new Task.Modal(null, Constants.SNYKOMYCIN_PROGRESS_TITLE, true) {
+        ProgressManager.getInstance().run(new Task.Modal(null, Constants.PROD_TITLE, true) {
             @Override
             public void run(ProgressIndicator indicator) {
                 try {
@@ -167,11 +174,11 @@ public class SnykDetailsPanel extends JPanel {
         String snykUri = snykUriTxt.getText();
         String snykToken = snykTokentxt.getText();
         if (snykUri == null || snykUri.isEmpty()) {
-            Messages.showErrorDialog("Snyk URI cannot be empty", Constants.ERR_TITLE);
+            Messages.showErrorDialog("Snyk URI cannot be empty", Constants.PROD_TITLE);
             throw new IllegalArgumentException("Snyk URI cannot be empty!");
         }
         if (snykToken == null || snykToken.isEmpty()) {
-            Messages.showErrorDialog("Snyk Token cannot be empty", Constants.ERR_TITLE);
+            Messages.showErrorDialog("Snyk Token cannot be empty", Constants.PROD_TITLE);
             throw new IllegalArgumentException("Snyk Token cannot be empty!");
         }
     }
@@ -184,7 +191,6 @@ public class SnykDetailsPanel extends JPanel {
             snykOrgGroupNames = SnykUiUtil.getSnykOrgGroupNames(snykUri, snykToken);
             // Manipulate snyk org and group names and store in Map with group name as key and id as value
             snykOrgGroupNames.stream().map(s -> s.split("~")).forEach(s -> snykOrgNameIdMap.put(s[1] + "~" + s[2], s[0]));
-//            log.debug("While populating snykOrgNameIdMap: " + snykOrgNameIdMap);
             snykOrgNameIdMap.forEach((k, v) -> {
                 orgNameComboBox.addItem(k);
             });

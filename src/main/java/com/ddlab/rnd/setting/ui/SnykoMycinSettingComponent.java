@@ -1,13 +1,19 @@
 package com.ddlab.rnd.setting.ui;
 
 
+import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 import com.ddlab.rnd.ui.panel.AiDetailsPanel;
 import com.ddlab.rnd.ui.panel.SnykDetailsPanel;
+
 import lombok.Getter;
 import lombok.Setter;
-
-import javax.swing.*;
-import java.awt.*;
 
 @Getter
 @Setter

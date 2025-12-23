@@ -12,9 +12,17 @@
  */
 package com.ddlab.rnd.action;
 
-import com.ddlab.rnd.action.addon.SnykDataActionAddon;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Map;
+
+import org.jetbrains.annotations.NotNull;
+
+import com.ddlab.rnd.action.service.SnykActionServiceImpl;
+import com.ddlab.rnd.build.modifier.BuildModifiable;
 import com.ddlab.rnd.common.util.Constants;
 import com.ddlab.rnd.exception.NoFixableSnykIssueFoundException;
+import com.ddlab.rnd.exception.NoModificationRequiredException;
 import com.ddlab.rnd.exception.NoSnykIssueFoundException;
 import com.ddlab.rnd.exception.NoSuchSnykProjectFoundException;
 import com.ddlab.rnd.ui.util.CommonUIUtil;
@@ -28,8 +36,8 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
+
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * The Class UpdateBuildAction.
@@ -46,7 +54,7 @@ public class UpdateBuildAction extends AnAction {
      */
     @Override
     public void actionPerformed(AnActionEvent e) {
-        log.debug("************** START - TRACKING DATA FOR ANALYSIS **************");
+        log.debug("\n************** START - TRACKING DATA FOR ANALYSIS **************\n");
         Project project = e.getProject();
         if (project == null)
             return;
@@ -54,8 +62,8 @@ public class UpdateBuildAction extends AnAction {
         log.debug("Action Type: {},  Project Name: {}", "Update", project.getName());
         PsiFile psiFile = e.getData(CommonDataKeys.PSI_FILE);
         CommonUIUtil.validateAiInputsFromSetting();
-        performOperationProgressively(psiFile, project);
-        log.debug("************** END - TRACKING DATA FOR ANALYSIS **************\n");
+        performOperationProgressively11(psiFile, project);
+        log.debug("\n************** END - TRACKING DATA FOR ANALYSIS **************\n");
     }
 
     /**
@@ -65,9 +73,6 @@ public class UpdateBuildAction extends AnAction {
      */
     @Override
     public void update(AnActionEvent e) {
-        // Control visibility and enablement of the action
-        // e.g., enable only if an editor is active
-//            VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
         Editor editor = e.getData(CommonDataKeys.EDITOR);
         String fileName = editor.getVirtualFile().getName();
         System.out.println("Update File Name: " + fileName);
@@ -85,9 +90,10 @@ public class UpdateBuildAction extends AnAction {
     }
 
     // ~~~~~~~~~~~~~~ all private methods below ~~~~~~~~~~~
-    private void performOperationProgressively(PsiFile psiFile, Project project) {
-        ProgressManager.getInstance().run(new Task.Modal(null, Constants.SNYKOMYCIN_PROGRESS_TITLE, true) {
-//        ProgressManager.getInstance().run(new Task.Modal(project, Constants.SNYKOMYCIN_PROGRESS_TITLE, true) {
+
+    private void performOperationProgressively11(PsiFile psiFile, Project project) {
+        final String fileName = psiFile.getVirtualFile().getName();
+        ProgressManager.getInstance().run(new Task.Modal(null, Constants.PROD_TITLE, true) {
 
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
@@ -95,32 +101,48 @@ public class UpdateBuildAction extends AnAction {
                     indicator.setIndeterminate(true);
                     indicator.setText(Constants.SNYK_ISSUES_PROGRESS_MSG);
 
-                    String projectIssuesAsJsonText = SnykDataActionAddon.getFixableSnykIssuesAsJsonText(project);
-                    indicator.setText("Analyzing Dependencies for issues reported by Snyk ...");
-                    String aiResponse = SnykDataActionAddon.getBuildUpdateGenAIAnswer(psiFile, projectIssuesAsJsonText);
+                    indicator.setText("Analyzing the dependencies");
+                    Map<String, String> fixedDependencyMap = SnykActionServiceImpl.getHighestFixableSnykIssuesDetails(project, fileName);
+                    if(fixedDependencyMap.isEmpty()) {
+                        CommonUIUtil.showAppSuccessfulMessage(Constants.NO_FIXABLE_ISSUES_MSG);
+                        return;
+                    }
 
+                    String srcBuildFilePath = psiFile.getVirtualFile().getPath();
+                    String destnBuildFilePath = srcBuildFilePath;
+                    log.debug("Build fileName: {}", fileName);
+                    String content = Files.readString(Paths.get(srcBuildFilePath));
                     indicator.setText("Creating a backup and updating build file ...");
 
                     // Finally create a backup file
                     CommonUIUtil.createBackFile(project, psiFile.getName());
                     // Update the build.gradle file contents
                     indicator.setText("Finishing all ...");
-                    CommonUIUtil.updateBuildFileContents(psiFile, project,aiResponse);
+
+                    BuildModifiable buildModifiable = Constants.BUILD_MODIFIER_MAP.get(fileName);
+                    buildModifiable.modifyBuild(content, fixedDependencyMap, Paths.get(destnBuildFilePath));
+
+                    CommonUIUtil.showWarningNotifiation(Constants.DISCLAIMER_MSG);
                     CommonUIUtil.showAppSuccessfulMessage(Constants.UPDATE_BUILD_SUCCESS_MSG);
+
                 } catch(NoSuchSnykProjectFoundException nspe) {
-                    log.debug("No project found in Snyk");
+                    log.error("No project found in Snyk");
                     CommonUIUtil.showAppErrorMessage(Constants.NO_SNYK_PROJECT_FOUND_MSG);
                 }
                 catch (NoSnykIssueFoundException ex) {
-                    log.debug("No issues found in Snyk");
+                    log.error("No issues found in Snyk");
                     CommonUIUtil.showAppSuccessfulMessage(Constants.NO_SNYK_ISSUES_FOUND);
                 }
                 catch(NoFixableSnykIssueFoundException nfse) {
-                    log.debug("No fixable issues found in Snyk");
+                    log.error("No fixable issues found in Snyk");
                     CommonUIUtil.showAppSuccessfulMessage(Constants.NO_FIXABLE_SNYK_ISSUE_MSG);
                 }
+                catch (NoModificationRequiredException nre) {
+                    log.error("No modification required in the build file");
+                    CommonUIUtil.showAppSuccessfulMessage(Constants.NO_MODIFICATION_MSG);
+                }
                 catch (Exception ex) {
-                    log.error("Error Messages to get Snyk Issues: {}", ex.getMessage());
+                    log.error("Error Messages to get Snyk Issues: {}", ex);
                     CommonUIUtil.showAppErrorMessage(ex.getMessage());
                 }
             }

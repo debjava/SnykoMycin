@@ -15,5 +15,7 @@ public class AIPromptModel {
     private List<PromptMessageModel> messages;
 	@JsonProperty("max_tokens")
     private Integer maxTokens;
+    //@JsonProperty("temperature")
+    //private Double temperature = 0.0; //default for more deterministic output
 
 }

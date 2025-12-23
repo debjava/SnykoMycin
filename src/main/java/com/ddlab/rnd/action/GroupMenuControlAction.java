@@ -1,12 +1,13 @@
 package com.ddlab.rnd.action;
 
+import org.jetbrains.annotations.NotNull;
+
 import com.ddlab.rnd.common.util.Constants;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.editor.Editor;
-import org.jetbrains.annotations.NotNull;
 
 public class GroupMenuControlAction extends DefaultActionGroup  {
 

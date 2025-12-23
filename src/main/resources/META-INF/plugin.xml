@@ -1,27 +1,60 @@
-<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
     <id>com.ddlab.rnd.SnykoMycin</id>
 
-    <!-- Public plugin name should be written in Title Case.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
-    <name>SnykoMycin</name>
+    <name>DDLABS Snykomycin</name>
 
-    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor url="https://www.ddlabsinc.com">DDLABS Inc.</vendor>
+    <vendor email="deba.java@gmail.com" url="https://www.ddlabsinc.com">Debadatta Mishra,DDLABS Inc.</vendor>
 
-    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
     <description>
         <![CDATA[
-        SnykoMicin – A Tornado Creation Powered by Passion<br>
-        <em>most HTML tags may be used</em>
-    ]]></description>
+        <span style="font-size:13px; font-weight:bold;">Snykomycin</span> is a free and open‑source IntelliJ IDEA plugin designed to help developers in swiftly
+        remediating security vulnerabilities identified by the Snyk system.
+        It intelligently upgrades dependency versions as prescribed by Snyk, ensuring projects remain resilient and secure.
+        Currently, <b>Snykomycin</b> provides seamless support for <b><i>Maven (pom.xml)</b></i>,
+        <b><i>Gradle (build.gradle)</b></i>, and <b><i>NPM (package.json)</b></i> ecosystems.
+        <b>Snykomycin</b> supports the following environments:
+        <ul>
+        <li><b>Windows: 386, AMD64, and ARM64</b></li>
+        <li><b>MacOS: AMD64 and ARM64</b></li>
+        <li><b>Linux Alpine: 386 and AMD64</b></li>
+        <li><b>Linux: 386, AMD64, and ARM64</b></li>
+        </ul>
 
-    <!-- Product and plugin compatibility requirements.
-         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+       <h3>🔑Key Features:</h3>
+       <ul>
+        <li> <b>Vulnerability Insights:</b> Aggregates all dependency vulnerabilities reported by Snyk and presents them with clarity and precision.</li>
+        <li><b>Severity‑Based Visualization:</b> Demonstrates vulnerabilities categorized by severity— <b>Critical</b>, <b>High</b>, <b>Medium</b>, and <b>Low</b>
+        in a sortable tabular format.
+       <li><b>One‑Click Remediation:</b> Effortlessly upgrades fixable dependencies with a single click.</li>
+       <li><b>Contextual Integration:</b> Offers a dedicated context menu, Snykomycin,
+       with intuitive sub‑menus: <b>“Show Snyk Issues”</b> and <b>“Update Dependencies.”</b></li>
+      </ul>
+
+      <h3>🌟 Why Snykomycin:</h3>Security vulnerabilities are reported periodically by the Snyk system, requiring developers to manually retrieve information
+      and update dependencies. It is a dilatory process and impedes the momentum of development.
+      Snykomycin eliminates this friction by enabling rapid dependency upgrades within a minute and accelerates development velocity.
+
+      <h3>❤️ Why You’ll Love It</h3>
+      <b>Synkomycin</b> is a small light-weight plugin which acts as a small antidote to security vulnerabilities without any side effect.
+      It is an attempt to turn chaos into clarity during development.
+
+      <h3>👉 Snykomycin: A creation from Tornado</h3>
+        From the visionary mind at Tornado comes <b>Snykomycin</b> — creafted by an Engineer to solve real problems and simplify developers’ lives.
+        🧐 Wanna to 🤝 join with me to a new challenging technical task ?
+
+      <h3>⚠️ Limitations</h3>
+        At present, <b>Snykomycin</b> does not provide automated upgrade, originating from transitive dependencies.
+        Active development efforts are underway to extend support and deliver comprehensive resolution for all transitive dependency issues in future releases.
+
+        <h3>📄 License</h3>
+          <p>&nbsp;&copy;&nbsp;Copyright 2025-2026 Debadatta Mishra(DD)</p>
+          <p>Free and Open Source licensed under the Apache License, Version 2.0.</p>
+          ✍️ Contributor: Debadatta Mishra(DD)
+          <br>
+    ]]>
+    </description>
+
     <depends>com.intellij.modules.platform</depends>
-
 
     <extensions defaultExtensionNs="com.intellij">
 

@@ -1,5 +1,19 @@
 package com.ddlab.rnd.ui.panel;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
+
 import com.ddlab.rnd.common.util.Constants;
 import com.ddlab.rnd.ui.util.BasicUiUtil;
 import com.ddlab.rnd.ui.util.CommonUIUtil;
@@ -7,16 +21,10 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.ui.Messages;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.swing.*;
-import javax.swing.border.TitledBorder;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
 
 @Slf4j
 @Getter
@@ -240,19 +248,19 @@ public class AiDetailsPanel extends JPanel {
         String oauthEndPointUri = oauthEndPointTxt.getText();
         String aiApiEndPointUri = llmApiEndPointTxt.getText();
         if (clientId == null || clientId.isEmpty()) {
-            Messages.showErrorDialog("Client Id cannot be empty", Constants.ERR_TITLE);
+            Messages.showErrorDialog("Client Id cannot be empty", Constants.PROD_TITLE);
             throw new IllegalArgumentException("ClientId cannot be empty!");
         }
         if (clientSecret == null || clientSecret.isEmpty()) {
-            Messages.showErrorDialog("Client Secret cannot be empty", Constants.ERR_TITLE);
+            Messages.showErrorDialog("Client Secret cannot be empty", Constants.PROD_TITLE);
             throw new IllegalArgumentException("ClientSecret cannot be empty!");
         }
         if (oauthEndPointUri == null || oauthEndPointUri.isEmpty()) {
-            Messages.showErrorDialog("OAuth End Point cannot be empty", Constants.ERR_TITLE);
+            Messages.showErrorDialog("OAuth End Point cannot be empty", Constants.PROD_TITLE);
             throw new IllegalArgumentException("OAuth End Point cannot be empty!");
         }
         if (aiApiEndPointUri == null || aiApiEndPointUri.isEmpty()) {
-            Messages.showErrorDialog("LLM Api End Point cannot be empty", Constants.ERR_TITLE);
+            Messages.showErrorDialog("LLM Api End Point cannot be empty", Constants.PROD_TITLE);
             throw new IllegalArgumentException("LLM Api End Point cannot be empty!");
         }
 
