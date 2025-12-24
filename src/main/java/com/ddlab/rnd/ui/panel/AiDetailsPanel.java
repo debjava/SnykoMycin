@@ -38,6 +38,8 @@ public class AiDetailsPanel extends JPanel {
     private JTextField llmApiEndPointTxt;
     private JTextField textField;
     private JComboBox<String> llmModelcomboBox;
+    private JTextField modelTypeTxt;
+    private JTextField modelSizeTxt;
 
     public AiDetailsPanel() {
         setBorder(new TitledBorder(null, "AI Details", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -66,16 +68,41 @@ public class AiDetailsPanel extends JPanel {
 
         createLLMGetButton();
 
+        createModelTypeLabel();
+        createModelTypeText();
+        createModelSizeLabel();
+        createModelSizeText();
+
     }
+
+//    private void createLayout() {
+//        GridBagLayout gbl_aiDetailsPanel = new GridBagLayout();
+//        gbl_aiDetailsPanel.columnWidths = new int[]{0, 0, 0};
+//        gbl_aiDetailsPanel.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0};
+//        gbl_aiDetailsPanel.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
+//        gbl_aiDetailsPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+//        setLayout(gbl_aiDetailsPanel);
+//    }
 
     private void createLayout() {
         GridBagLayout gbl_aiDetailsPanel = new GridBagLayout();
-        gbl_aiDetailsPanel.columnWidths = new int[]{0, 0, 0};
-        gbl_aiDetailsPanel.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0};
-        gbl_aiDetailsPanel.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
-        gbl_aiDetailsPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+        gbl_aiDetailsPanel.columnWidths = new int[] { 0, 0, 0, 0, 0, 0 };
+        gbl_aiDetailsPanel.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0 };
+        gbl_aiDetailsPanel.columnWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE, 1.0, 0.0, 0.0 };
+        gbl_aiDetailsPanel.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
         setLayout(gbl_aiDetailsPanel);
     }
+
+
+//    private void createClientIdLabel() {
+//        JLabel clienIdLbl = new JLabel("*Client Id:");
+//        GridBagConstraints gbc_clienIdLbl = new GridBagConstraints();
+//        gbc_clienIdLbl.insets = new Insets(0, 0, 5, 5);
+//        gbc_clienIdLbl.anchor = GridBagConstraints.EAST;
+//        gbc_clienIdLbl.gridx = 0;
+//        gbc_clienIdLbl.gridy = 0;
+//        add(clienIdLbl, gbc_clienIdLbl);
+//    }
 
     private void createClientIdLabel() {
         JLabel clienIdLbl = new JLabel("*Client Id:");
@@ -87,9 +114,21 @@ public class AiDetailsPanel extends JPanel {
         add(clienIdLbl, gbc_clienIdLbl);
     }
 
+//    private void createClientIdText() {
+//        clientIdTxt = new JTextField();
+//        GridBagConstraints gbc_clientIdTxt = new GridBagConstraints();
+//        gbc_clientIdTxt.insets = new Insets(0, 0, 5, 5);
+//        gbc_clientIdTxt.fill = GridBagConstraints.HORIZONTAL;
+//        gbc_clientIdTxt.gridx = 1;
+//        gbc_clientIdTxt.gridy = 0;
+//        add(clientIdTxt, gbc_clientIdTxt);
+//        clientIdTxt.setColumns(10);
+//    }
+
     private void createClientIdText() {
         clientIdTxt = new JTextField();
         GridBagConstraints gbc_clientIdTxt = new GridBagConstraints();
+        gbc_clientIdTxt.gridwidth = 4;
         gbc_clientIdTxt.insets = new Insets(0, 0, 5, 5);
         gbc_clientIdTxt.fill = GridBagConstraints.HORIZONTAL;
         gbc_clientIdTxt.gridx = 1;
@@ -97,6 +136,16 @@ public class AiDetailsPanel extends JPanel {
         add(clientIdTxt, gbc_clientIdTxt);
         clientIdTxt.setColumns(10);
     }
+
+//    private void createClientSecretLabel() {
+//        JLabel clientSecretLbl = new JLabel("*Client Secret:");
+//        GridBagConstraints gbc_clientSecretLbl = new GridBagConstraints();
+//        gbc_clientSecretLbl.anchor = GridBagConstraints.EAST;
+//        gbc_clientSecretLbl.insets = new Insets(0, 0, 5, 5);
+//        gbc_clientSecretLbl.gridx = 0;
+//        gbc_clientSecretLbl.gridy = 1;
+//        add(clientSecretLbl, gbc_clientSecretLbl);
+//    }
 
     private void createClientSecretLabel() {
         JLabel clientSecretLbl = new JLabel("*Client Secret:");
@@ -108,9 +157,21 @@ public class AiDetailsPanel extends JPanel {
         add(clientSecretLbl, gbc_clientSecretLbl);
     }
 
+//    private void createClientSecretText() {
+//        clientSecretTxt = new JTextField();
+//        GridBagConstraints gbc_clientSecretTxt = new GridBagConstraints();
+//        gbc_clientSecretTxt.insets = new Insets(0, 0, 5, 5);
+//        gbc_clientSecretTxt.fill = GridBagConstraints.HORIZONTAL;
+//        gbc_clientSecretTxt.gridx = 1;
+//        gbc_clientSecretTxt.gridy = 1;
+//        add(clientSecretTxt, gbc_clientSecretTxt);
+//        clientSecretTxt.setColumns(10);
+//    }
+
     private void createClientSecretText() {
         clientSecretTxt = new JTextField();
         GridBagConstraints gbc_clientSecretTxt = new GridBagConstraints();
+        gbc_clientSecretTxt.gridwidth = 4;
         gbc_clientSecretTxt.insets = new Insets(0, 0, 5, 5);
         gbc_clientSecretTxt.fill = GridBagConstraints.HORIZONTAL;
         gbc_clientSecretTxt.gridx = 1;
@@ -118,6 +179,29 @@ public class AiDetailsPanel extends JPanel {
         add(clientSecretTxt, gbc_clientSecretTxt);
         clientSecretTxt.setColumns(10);
     }
+
+
+//    private void createOAuthEndPointLabel() {
+//        JLabel oauthLbl = new JLabel("*OAuth End Point:");
+//        GridBagConstraints gbc_oauthLbl = new GridBagConstraints();
+//        gbc_oauthLbl.anchor = GridBagConstraints.EAST;
+//        gbc_oauthLbl.insets = new Insets(0, 0, 5, 5);
+//        gbc_oauthLbl.gridx = 0;
+//        gbc_oauthLbl.gridy = 2;
+//        add(oauthLbl, gbc_oauthLbl);
+//    }
+//
+//    private void createOAuthEndPointText() {
+//
+//        oauthEndPointTxt = new JTextField();
+//        GridBagConstraints gbc_oauthEndPointTxt = new GridBagConstraints();
+//        gbc_oauthEndPointTxt.insets = new Insets(0, 0, 5, 5);
+//        gbc_oauthEndPointTxt.fill = GridBagConstraints.HORIZONTAL;
+//        gbc_oauthEndPointTxt.gridx = 1;
+//        gbc_oauthEndPointTxt.gridy = 2;
+//        add(oauthEndPointTxt, gbc_oauthEndPointTxt);
+//        oauthEndPointTxt.setColumns(10);
+//    }
 
     private void createOAuthEndPointLabel() {
         JLabel oauthLbl = new JLabel("*OAuth End Point:");
@@ -133,6 +217,7 @@ public class AiDetailsPanel extends JPanel {
 
         oauthEndPointTxt = new JTextField();
         GridBagConstraints gbc_oauthEndPointTxt = new GridBagConstraints();
+        gbc_oauthEndPointTxt.gridwidth = 4;
         gbc_oauthEndPointTxt.insets = new Insets(0, 0, 5, 5);
         gbc_oauthEndPointTxt.fill = GridBagConstraints.HORIZONTAL;
         gbc_oauthEndPointTxt.gridx = 1;
@@ -140,6 +225,28 @@ public class AiDetailsPanel extends JPanel {
         add(oauthEndPointTxt, gbc_oauthEndPointTxt);
         oauthEndPointTxt.setColumns(10);
     }
+
+//    private void createLLMAPiEndPointLabel() {
+//        JLabel llmApiEndPointLbl = new JLabel("*LLM Api EndPoint:");
+//        GridBagConstraints gbc_llmApiEndPointLbl = new GridBagConstraints();
+//        gbc_llmApiEndPointLbl.anchor = GridBagConstraints.EAST;
+//        gbc_llmApiEndPointLbl.insets = new Insets(0, 0, 5, 5);
+//        gbc_llmApiEndPointLbl.gridx = 0;
+//        gbc_llmApiEndPointLbl.gridy = 3;
+//        add(llmApiEndPointLbl, gbc_llmApiEndPointLbl);
+//    }
+//
+//    private void createLLMApiEndPointText() {
+//        llmApiEndPointTxt = new JTextField();
+//        GridBagConstraints gbc_llmApiEndPointTxt = new GridBagConstraints();
+//        gbc_llmApiEndPointTxt.gridwidth = 2;
+//        gbc_llmApiEndPointTxt.insets = new Insets(0, 0, 5, 5);
+//        gbc_llmApiEndPointTxt.fill = GridBagConstraints.HORIZONTAL;
+//        gbc_llmApiEndPointTxt.gridx = 1;
+//        gbc_llmApiEndPointTxt.gridy = 3;
+//        add(llmApiEndPointTxt, gbc_llmApiEndPointTxt);
+//        llmApiEndPointTxt.setColumns(10);
+//    }
 
     private void createLLMAPiEndPointLabel() {
         JLabel llmApiEndPointLbl = new JLabel("*LLM Api EndPoint:");
@@ -154,7 +261,7 @@ public class AiDetailsPanel extends JPanel {
     private void createLLMApiEndPointText() {
         llmApiEndPointTxt = new JTextField();
         GridBagConstraints gbc_llmApiEndPointTxt = new GridBagConstraints();
-        gbc_llmApiEndPointTxt.gridwidth = 2;
+        gbc_llmApiEndPointTxt.gridwidth = 4;
         gbc_llmApiEndPointTxt.insets = new Insets(0, 0, 5, 5);
         gbc_llmApiEndPointTxt.fill = GridBagConstraints.HORIZONTAL;
         gbc_llmApiEndPointTxt.gridx = 1;
@@ -163,6 +270,26 @@ public class AiDetailsPanel extends JPanel {
         llmApiEndPointTxt.setColumns(10);
     }
 
+
+//    private void createLLMModelLabel() {
+//        JLabel llmModelLbl = new JLabel("LLM Models:");
+//        GridBagConstraints gbc_llmModelLbl = new GridBagConstraints();
+//        gbc_llmModelLbl.anchor = GridBagConstraints.EAST;
+//        gbc_llmModelLbl.insets = new Insets(0, 0, 5, 5);
+//        gbc_llmModelLbl.gridx = 0;
+//        gbc_llmModelLbl.gridy = 4;
+//        add(llmModelLbl, gbc_llmModelLbl);
+//    }
+//
+//    private void createLLMComboBox() {
+//        llmModelcomboBox = new JComboBox<String>();
+//        GridBagConstraints gbc_llmModelcomboBox = new GridBagConstraints();
+//        gbc_llmModelcomboBox.insets = new Insets(0, 0, 5, 5);
+//        gbc_llmModelcomboBox.fill = GridBagConstraints.HORIZONTAL;
+//        gbc_llmModelcomboBox.gridx = 1;
+//        gbc_llmModelcomboBox.gridy = 4;
+//        add(llmModelcomboBox, gbc_llmModelcomboBox);
+//    }
 
     private void createLLMModelLabel() {
         JLabel llmModelLbl = new JLabel("LLM Models:");
@@ -177,11 +304,56 @@ public class AiDetailsPanel extends JPanel {
     private void createLLMComboBox() {
         llmModelcomboBox = new JComboBox<String>();
         GridBagConstraints gbc_llmModelcomboBox = new GridBagConstraints();
+        gbc_llmModelcomboBox.gridwidth = 3;
         gbc_llmModelcomboBox.insets = new Insets(0, 0, 5, 5);
         gbc_llmModelcomboBox.fill = GridBagConstraints.HORIZONTAL;
         gbc_llmModelcomboBox.gridx = 1;
         gbc_llmModelcomboBox.gridy = 4;
         add(llmModelcomboBox, gbc_llmModelcomboBox);
+    }
+
+    private void createModelTypeLabel() {
+        JLabel modelTypeLbl = new JLabel("Model Type:");
+        GridBagConstraints gbc_modelTypeLbl = new GridBagConstraints();
+        gbc_modelTypeLbl.anchor = GridBagConstraints.EAST;
+        gbc_modelTypeLbl.insets = new Insets(0, 0, 0, 5);
+        gbc_modelTypeLbl.gridx = 0;
+        gbc_modelTypeLbl.gridy = 5;
+        add(modelTypeLbl, gbc_modelTypeLbl);
+    }
+
+    private void createModelTypeText() {
+        modelTypeTxt = new JTextField();
+        GridBagConstraints gbc_textField_1 = new GridBagConstraints();
+        gbc_textField_1.insets = new Insets(0, 0, 0, 5);
+        gbc_textField_1.fill = GridBagConstraints.HORIZONTAL;
+        gbc_textField_1.gridx = 1;
+        gbc_textField_1.gridy = 5;
+        add(modelTypeTxt, gbc_textField_1);
+        modelTypeTxt.setColumns(10);
+        modelTypeTxt.setEditable(false);
+    }
+
+    private void createModelSizeLabel() {
+        JLabel modelSize = new JLabel("Model Size:");
+        GridBagConstraints gbc_modelSize = new GridBagConstraints();
+        gbc_modelSize.anchor = GridBagConstraints.WEST;
+        gbc_modelSize.insets = new Insets(0, 0, 0, 5);
+        gbc_modelSize.gridx = 2;
+        gbc_modelSize.gridy = 5;
+        add(modelSize, gbc_modelSize);
+    }
+
+    private void createModelSizeText() {
+        modelSizeTxt = new JTextField();
+        GridBagConstraints gbc_modelSizeTxt = new GridBagConstraints();
+        gbc_modelSizeTxt.anchor = GridBagConstraints.WEST;
+        gbc_modelSizeTxt.insets = new Insets(0, 0, 0, 5);
+        gbc_modelSizeTxt.gridx = 3;
+        gbc_modelSizeTxt.gridy = 5;
+        add(modelSizeTxt, gbc_modelSizeTxt);
+        modelSizeTxt.setColumns(10);
+        modelSizeTxt.setEditable(false);
     }
 
     private void createLLMGetButton() {
