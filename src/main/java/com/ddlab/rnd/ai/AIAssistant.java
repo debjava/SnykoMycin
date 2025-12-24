@@ -69,6 +69,27 @@ public class AIAssistant {
         return model.getAccessToken();
     }
 
+    public Map<String,String> getAllLLMModelsMap(String bearerToken, String aiAPIUrl) throws RuntimeException {
+        Map<String,String> modelsMap = null;
+        aiAPIUrl = aiAPIUrl + Constants.MODEL_PATH;
+        LLmModel model = null;
+        try {
+            String responseBody = CallApiType.GET.perform(aiAPIUrl, bearerToken);
+            ObjectMapper objectMapper = new ObjectMapper();
+            model = objectMapper.readValue(responseBody, LLmModel.class);
+
+            modelsMap = model.getData().stream().collect(Collectors.toMap(
+                    data -> data.getModel(),
+                    data -> data.getType().get(0)+"~"+data.getMaxModelLength()));
+
+        } catch (Exception e) {
+            log.error("Error while getting models", e);
+            throw new RuntimeException("UnExpected Error while fetching the LLM models. \nPlease contact the developer.");
+        }
+
+        return modelsMap;
+    }
+
     public List<String> getAllLLMModels(String bearerToken, String aiAPIUrl) throws RuntimeException {
         List<String> llmModelList = null;
         aiAPIUrl = aiAPIUrl + Constants.MODEL_PATH;

@@ -69,12 +69,12 @@
         <applicationService serviceImplementation="com.ddlab.rnd.setting.SynkoMycinSettings"/>
         <applicationConfigurable
                 id="com.example.settings"
-                displayName="SnykoMycin Setting"
+                displayName="Snykomycin Setting"
                 instance="com.ddlab.rnd.setting.SnykoMycinPluginConfigurable"/>
 
     </extensions>
     <actions>
-        <group id="SynkoMycinPlugin.SubMenu" text="SnykoMycin" class ="com.ddlab.rnd.action.GroupMenuControlAction"
+        <group id="SynkoMycinPlugin.SubMenu" text="Snykomycin" class ="com.ddlab.rnd.action.GroupMenuControlAction"
                popup="true" icon="/icons/double-arrow-16.png">
             <action id="SnykoMycin.DisplaySnykAction"
                     class="com.ddlab.rnd.action.DisplaySnykDataAction"

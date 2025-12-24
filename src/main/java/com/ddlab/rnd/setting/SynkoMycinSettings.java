@@ -14,8 +14,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 @State(
-        name = "SnykoMycinSettings",
-        storages = @Storage("SnykoMycinSettings.xml")
+        name = "SnykomycinSettings",
+        storages = @Storage("SnykomycinSettings.xml")
 )
 @Getter
 @Setter
@@ -26,7 +26,11 @@ public class SynkoMycinSettings implements PersistentStateComponent<SynkoMycinSe
     private String oauthEndPointUri;
     private String llmModelComboSelection;
     private java.util.List<String> llmModelComboItems;
+    private String llmModelType;
+    private String llmModelSize;
     private String llmApiEndPointUri;
+
+    private Map<String, String> llmModelsMap;
 
     // Snyk details
     private String snykUriTxt;
@@ -52,6 +56,14 @@ public class SynkoMycinSettings implements PersistentStateComponent<SynkoMycinSe
         this.oauthEndPointUri = state.oauthEndPointUri;
 
         this.llmModelComboItems = state.llmModelComboItems;
+
+
+        // Trying to save the LLM model type and size
+        this.llmModelsMap = state.llmModelsMap;
+        this.llmModelType = state.llmModelType;
+        this.llmModelSize = state.llmModelSize;
+
+
         this.llmModelComboSelection = state.llmModelComboSelection;
         this.llmApiEndPointUri = state.llmApiEndPointUri;
 
@@ -62,5 +74,7 @@ public class SynkoMycinSettings implements PersistentStateComponent<SynkoMycinSe
         this.snykOrgComboItems = state.snykOrgComboItems;
         this.snykOrgComboSelection = state.snykOrgComboSelection;
         this.snykOrgNameIdMap = state.snykOrgNameIdMap;
+
+
     }
 }

@@ -106,11 +106,6 @@ public class CommonUIUtil {
         createBackupAndCopy(project, buildFileName);
 
         // Refresh the project
-//        VirtualFile baseDir = project.getBaseDir();
-//        if (baseDir != null) {
-//            baseDir.refresh(true, true); // recursive refresh
-//        }
-
         String basePath = project.getBasePath();
         if (basePath != null) {
             VirtualFile baseDir = LocalFileSystem.getInstance().findFileByPath(basePath);
@@ -139,13 +134,4 @@ public class CommonUIUtil {
         }
     }
 
-    public static void updateBuildFileContents(PsiFile psiFile, Project project, String buildContents) {
-        VirtualFile virtualFile = psiFile.getVirtualFile();
-        WriteCommandAction.runWriteCommandAction(project, () -> {
-            Document document = FileDocumentManager.getInstance().getDocument(virtualFile);
-            if(document != null) {
-                document.setText(buildContents);
-            }
-        });
-    }
 }

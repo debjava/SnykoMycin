@@ -82,25 +82,17 @@ public class DisplaySnykDataAction extends AnAction {
 
     // ~~~~~~~~~ Private methods below ~~~~~~~~~~~
     private void runAllInBackgroundMode(Project project, String editorFileTypeName) {
-        SnykActionServiceImpl.getProgressiveSnykIssuesInBackground11(project, editorFileTypeName)
-//                .whenComplete((result, throwable) -> {
-//                    ApplicationManager.getApplication().invokeLater(() -> {
-//                        showData(project, result);
-//                    });
-//                    log.debug("************** END - TRACKING DATA FOR ANALYSIS **************\n");
-//                });
+        SnykActionServiceImpl.fetchSnykIssuesInBackground(project, editorFileTypeName)
                 .thenAccept(result -> {
                     ApplicationManager.getApplication().invokeLater(() -> {
                         showData(project, result);
                     });
-//                    log.debug("************** END - TRACKING DATA FOR ANALYSIS **************\n");
                 });
-
     }
 
     private void runAllInForegroundMode(Project project, String editorFileTypeName) {
 //        JTable table = SnykDataActionAddon.getProgressiveSnykIssues11(project,editorFileTypeName); // Correct
-        JTable table = SnykActionServiceImpl.getProgressiveSnykIssues11(project, editorFileTypeName);
+        JTable table = SnykActionServiceImpl.fetchProgressiveSnykIssuesInForeground(project, editorFileTypeName);
         showData(project, table);
     }
 

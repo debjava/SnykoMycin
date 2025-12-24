@@ -3,11 +3,11 @@ package com.ddlab.rnd.ui.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 
-//import com.ddlab.rnd.ai.AgentUtil;
 import com.ddlab.rnd.ai.AIAssistant;
 import com.ddlab.rnd.common.util.Constants;
 import com.ddlab.rnd.exception.InvalidTokenException;
@@ -26,31 +26,37 @@ public class BasicUiUtil {
 //        return comboItems;
 //    }
 
+    public static Map<String, String> getlLLMModelDetails(String clientId, String clientSecret, String tokenUrl, String aiApriEndPointUrl) throws InvalidTokenException {
+        // First get the bearer token
+        Map<String, String> llmModelsMap = Map.of();
+        try {
+            AIAssistant aiAssistant = new AIAssistant(clientId, clientSecret, tokenUrl);
+            String bearerToken = aiAssistant.getBearerToken();
+            if(bearerToken == null) {
+                throw new InvalidTokenException("Bearer token is null, please re-check client Id, client secret, token url ");
+            }
+            llmModelsMap = aiAssistant.getAllLLMModelsMap(bearerToken, aiApriEndPointUrl);
+            log.debug("llmMdelsMap: {}", llmModelsMap);
+        } catch (RuntimeException re) {
+            log.error("Exception while getting LLM models: ", re);
+            throw re;
+//            Messages.showErrorDialog(re.getMessage(), "SnykoMycin Error");
+        }
+        return llmModelsMap;
+    }
+
+    @Deprecated
     public static List<String> getActualLLMModels(String clientId, String clientSecret, String tokenUrl, String aiApriEndPointUrl) throws InvalidTokenException {
-//        log.debug("Client Id: " + clientId);
-//        log.debug("Client Secret: " + clientSecret);
         List<String> comboItems = List.of();
 
         // First get the bearer token
         try {
             AIAssistant aiAssistant = new AIAssistant(clientId, clientSecret, tokenUrl);
             String bearerToken = aiAssistant.getBearerToken();
-
-//            String bearerToken = AgentUtil.getAIBearerToken(clientId, clientSecret, tokenUrl);
-//            log.debug("Bearer Token: " + bearerToken);
-
             if(bearerToken == null) {
                 throw new InvalidTokenException("Bearer token is null, please re-check client Id, client secret, token url ");
             }
-//            comboItems = AgentUtil.getAllLLMModels(bearerToken, aiApriEndPointUrl);
-
             comboItems = aiAssistant.getAllLLMModels(bearerToken, aiApriEndPointUrl);
-
-
-//            if (bearerToken == null) {
-//                Messages.showErrorDialog("Bearer token is null, please enter clientId, clientSecret, tokenUrl ", Constants.ERR_TITLE);
-//            }
-//            comboItems = AgentUtil.getAllLLMModels(bearerToken, aiApriEndPointUrl);
         } catch (RuntimeException re) {
             log.error("Exception while getting LLM models: ", re);
             re.printStackTrace();
@@ -103,6 +109,12 @@ public class BasicUiUtil {
         List<String> allLlmModelComboItems = getComboBoxItems(llmModelComboBox);
         settings.setLlmModelComboItems(allLlmModelComboItems);
         settings.setLlmModelComboSelection((String) llmModelComboBox.getSelectedItem());
+
+        // Save the LLM Model Map, Type and Size
+        settings.setLlmModelsMap(aiPanel.getLlmModelMap());// Save the Map for future use
+        settings.setLlmModelType(aiPanel.getModelTypeText().getText());
+        settings.setLlmModelSize(aiPanel.getModelSizeText().getText());
+
     }
 
     public static void saveSnykPanelSetting(SynkoMycinSettings settings, SnykoMycinSettingComponent component) {
@@ -123,11 +135,6 @@ public class BasicUiUtil {
         } else {
             settings.setSnykOrgNameIdMap(settings.getSnykOrgNameIdMap());
         }
-
-//        Map<String, String> snykOrgNameIdMap = snykPanel.getSnykOrgNameIdMap();
-//        log.debug("While saving snykOrgNameIdMap: " + settings.getSnykOrgNameIdMap());
-
-//        settings.setSnykOrgNameIdMap(snykPanel.getSnykOrgNameIdMap());
     }
 
     public static boolean isAiPanelModified(SynkoMycinSettings settings, SnykoMycinSettingComponent component) {
@@ -170,6 +177,13 @@ public class BasicUiUtil {
             llmModelComboItems.forEach(value -> llmModelComboBox.addItem(value));
         }
         llmModelComboBox.setSelectedItem(settings.getLlmModelComboSelection());
+
+        aiPanel.getModelTypeText().setText(settings.getLlmModelType());
+        aiPanel.getModelSizeText().setText(settings.getLlmModelSize());
+
+//        aiPanel.getModelSizeTxt().setText(settings.getLlmModelSize());
+//        aiPanel.getModelTypeTxt().setText(settings.getLlmModelType());
+
     }
 
     public static void resetSnykPanel(SynkoMycinSettings settings, SnykoMycinSettingComponent component) {

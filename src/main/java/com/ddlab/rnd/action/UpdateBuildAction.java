@@ -62,7 +62,7 @@ public class UpdateBuildAction extends AnAction {
         log.debug("Action Type: {},  Project Name: {}", "Update", project.getName());
         PsiFile psiFile = e.getData(CommonDataKeys.PSI_FILE);
         CommonUIUtil.validateAiInputsFromSetting();
-        performOperationProgressively11(psiFile, project);
+        performOperationProgressively(psiFile, project);
         log.debug("\n************** END - TRACKING DATA FOR ANALYSIS **************\n");
     }
 
@@ -91,7 +91,7 @@ public class UpdateBuildAction extends AnAction {
 
     // ~~~~~~~~~~~~~~ all private methods below ~~~~~~~~~~~
 
-    private void performOperationProgressively11(PsiFile psiFile, Project project) {
+    private void performOperationProgressively(PsiFile psiFile, Project project) {
         final String fileName = psiFile.getVirtualFile().getName();
         ProgressManager.getInstance().run(new Task.Modal(null, Constants.PROD_TITLE, true) {
 
@@ -122,7 +122,6 @@ public class UpdateBuildAction extends AnAction {
                     BuildModifiable buildModifiable = Constants.BUILD_MODIFIER_MAP.get(fileName);
                     buildModifiable.modifyBuild(content, fixedDependencyMap, Paths.get(destnBuildFilePath));
 
-                    CommonUIUtil.showWarningNotifiation(Constants.DISCLAIMER_MSG);
                     CommonUIUtil.showAppSuccessfulMessage(Constants.UPDATE_BUILD_SUCCESS_MSG);
 
                 } catch(NoSuchSnykProjectFoundException nspe) {
@@ -144,6 +143,8 @@ public class UpdateBuildAction extends AnAction {
                 catch (Exception ex) {
                     log.error("Error Messages to get Snyk Issues: {}", ex);
                     CommonUIUtil.showAppErrorMessage(ex.getMessage());
+                } finally {
+                    CommonUIUtil.showWarningNotifiation(Constants.DISCLAIMER_MSG);
                 }
             }
 
